@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "part-number-rule-schema",
+  "title": "Passive Component Part Number Rule",
+  "description": "Schema for defining how a manufacturer encodes component parameters into part numbers",
+  "type": "object",
+  "required": ["manufacturer", "componentType", "modeA"],
+  "properties": {
+    "manufacturer": {
+      "type": "string",
+      "enum": ["murata", "samsung", "tdk", "taiyo-yuden", "yageo", "walsin"],
+      "description": "Manufacturer identifier"
+    },
+    "componentType": {
+      "type": "string",
+      "enum": ["mlcc", "chip-resistor", "chip-inductor", "ferrite-bead", "tantalum"],
+      "description": "Type of passive component"
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Human-readable name for UI display"
+    },
+    "modeA": {
+      "type": "object",
+      "required": ["template", "segments"],
+      "description": "Mode A: Description to Part Number rules",
+      "properties": {
+        "template": {
+          "type": "string",
+          "description": "Template string with {segmentId} placeholders for PN assembly"
+        },
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "position", "length"],
+            "properties": {
+              "id": { "type": "string" },
+              "position": { "type": "integer", "minimum": 0 },
+              "length": { "type": "integer", "minimum": 1 },
+              "label": { "type": "string", "description": "Chinese label for this segment" },
+              "labelEn": { "type": "string", "description": "English label" },
+              "fixed": { "type": "string", "description": "If set, this segment is always this value" },
+              "refTable": { "type": "string", "description": "Reference table name in shared/" },
+              "refKey": { "type": "string", "description": "Key within the ref table for manufacturer-specific mapping" },
+              "computed": { "type": "boolean", "description": "If true, this segment is computed programmatically (e.g. capacitance 3-digit code)" },
+              "computedFrom": { "type": "string", "description": "Which param this computed segment reads from" },
+              "formatter": { "type": "string", "description": "Formatter function name for computed segments" }
+            }
+          }
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Default values for segments when parameter is not provided",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "parser": {
+      "type": "object",
+      "required": ["patterns"],
+      "properties": {
+        "patterns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["regex", "param"],
+            "properties": {
+              "regex": { "type": "string" },
+              "param": { "type": "string" },
+              "priority": { "type": "integer", "default": 0 }
+            }
+          }
+        }
+      }
+    },
+    "componentKeywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Keywords that help identify this component type from text (e.g. ['MLCC', '贴片电容', '电容'])"
+    }
+  }
+}

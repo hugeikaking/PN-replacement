@@ -1,0 +1,186 @@
+{
+  "manufacturer": "murata",
+  "componentType": "mlcc",
+  "displayName": "村田 MLCC (GRM 系列)",
+  "displayNameEn": "Murata MLCC (GRM Series)",
+  "description": "Murata general-purpose chip multilayer ceramic capacitor numbering system",
+  "componentKeywords": ["MLCC", "贴片电容", "片式电容", "积层电容", "陶瓷电容", "chip capacitor", "multilayer ceramic"],
+  "modeA": {
+    "template": "{series}{size}{thickness}{tc}{voltage}{capacitance}{tolerance}{individualSpec}{packaging}{internal}{suffix}",
+    "segments": [
+      {
+        "id": "series",
+        "position": 0,
+        "length": 3,
+        "fixed": "GRM",
+        "label": "系列",
+        "labelEn": "Series",
+        "description": "GRM = General purpose chip MLCC"
+      },
+      {
+        "id": "size",
+        "position": 3,
+        "length": 2,
+        "refTable": "size-codes",
+        "refKey": "murata",
+        "label": "尺寸",
+        "labelEn": "Chip Size",
+        "description": "Chip dimension code (EIA standard)"
+      },
+      {
+        "id": "thickness",
+        "position": 5,
+        "length": 1,
+        "label": "厚度",
+        "labelEn": "Thickness",
+        "description": "Thickness code",
+        "options": {
+          "1": "0.3mm",
+          "2": "0.5mm",
+          "3": "0.6mm",
+          "4": "0.8mm",
+          "5": "0.85mm",
+          "8": "1.15mm",
+          "9": "1.25mm",
+          "A": "1.6mm",
+          "B": "1.8mm / 2.0mm",
+          "C": "2.5mm"
+        }
+      },
+      {
+        "id": "tc",
+        "position": 6,
+        "length": 2,
+        "refTable": "temperature-codes",
+        "refKey": "murata",
+        "label": "温度特性",
+        "labelEn": "Temperature Characteristic",
+        "description": "Temperature characteristic code (X7R, C0G, etc.)"
+      },
+      {
+        "id": "voltage",
+        "position": 8,
+        "length": 2,
+        "refTable": "voltage-codes",
+        "refKey": "murata",
+        "label": "额定电压",
+        "labelEn": "Rated Voltage",
+        "description": "Rated voltage code"
+      },
+      {
+        "id": "capacitance",
+        "position": 10,
+        "length": 3,
+        "computed": true,
+        "computedFrom": "capacitance",
+        "formatter": "capacitance3Digit",
+        "label": "静电容量",
+        "labelEn": "Capacitance",
+        "description": "Capacitance 3-digit EIA code"
+      },
+      {
+        "id": "tolerance",
+        "position": 13,
+        "length": 1,
+        "refTable": "tolerance-codes",
+        "refKey": "murata",
+        "label": "精度",
+        "labelEn": "Tolerance",
+        "description": "Capacitance tolerance code"
+      },
+      {
+        "id": "individualSpec",
+        "position": 14,
+        "length": 2,
+        "label": "个别规格",
+        "labelEn": "Individual Specification",
+        "description": "Individual specifications (terminal material, etc.)",
+        "options": {
+          "A": "Standard (Cu/Ni/Sn)",
+          "D": "Pd electrode",
+          "J": "Soft termination"
+        }
+      },
+      {
+        "id": "packaging",
+        "position": 16,
+        "length": 1,
+        "label": "包装",
+        "labelEn": "Packaging",
+        "description": "Packaging style code",
+        "options": {
+          "D": "180mm Paper Tape (4mm pitch)",
+          "J": "330mm Paper Tape (4mm pitch)",
+          "K": "330mm Embossed Tape (4mm pitch)",
+          "L": "180mm Embossed Tape (4mm pitch)",
+          "W": "Bulk"
+        }
+      },
+      {
+        "id": "internal",
+        "position": 17,
+        "length": 1,
+        "label": "内部管理码",
+        "labelEn": "Internal code",
+        "description": "Internal management code"
+      },
+      {
+        "id": "suffix",
+        "position": 18,
+        "length": 1,
+        "label": "后缀",
+        "labelEn": "Suffix",
+        "description": "Additional specification suffix"
+      }
+    ],
+    "defaults": {
+      "series": "GRM",
+      "thickness": "8",
+      "individualSpec": "A",
+      "packaging": "D",
+      "internal": "3",
+      "suffix": "D"
+    }
+  },
+  "parser": {
+    "patterns": [
+      {
+        "regex": "\\b(0201|0402|0603|0805|1206|1210|1812|2220)\\b",
+        "param": "size",
+        "priority": 10,
+        "description": "EIA imperial size code"
+      },
+      {
+        "regex": "(\\d+(?:\\.\\d+)?\\s*[pPnNuUμ]\\s*[Ff])",
+        "param": "capacitance",
+        "priority": 10,
+        "description": "Capacitance with unit: 100nF, 10uF, 4.7uF, 22pF"
+      },
+      {
+        "regex": "\\b(X[5-8][RST]|C0G|NP0|COG|Y5V|U2J)\\b",
+        "param": "tc",
+        "priority": 10,
+        "description": "Temperature characteristic: X7R, C0G, NP0, X5R, Y5V"
+      },
+      {
+        "regex": "\\b(\\d+(?:\\.\\d+)?)\\s*V\\b",
+        "param": "voltage",
+        "priority": 9,
+        "description": "Voltage: 16V, 50V, 100V"
+      },
+      {
+        "regex": "[±±]?\\s*(\\d+(?:\\.\\d+)?)\\s*%",
+        "param": "tolerance",
+        "priority": 8,
+        "description": "Tolerance percentage: ±10%, ±5%"
+      }
+    ],
+    "normalizers": {
+      "size": "normalizeSize",
+      "capacitance": "normalizeCapacitance",
+      "voltage": "normalizeVoltage",
+      "tc": "normalizeTc",
+      "tolerance": "normalizeTolerance"
+    }
+  }
+}

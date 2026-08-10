@@ -1,0 +1,39 @@
+{
+  "description": "EIA size codes with metric equivalents and manufacturer-specific mappings",
+  "imperial": {
+    "0201": { "metric": "0603", "length_mm": 0.6, "width_mm": 0.3 },
+    "0402": { "metric": "1005", "length_mm": 1.0, "width_mm": 0.5 },
+    "0603": { "metric": "1608", "length_mm": 1.6, "width_mm": 0.8 },
+    "0805": { "metric": "2012", "length_mm": 2.0, "width_mm": 1.25 },
+    "1206": { "metric": "3216", "length_mm": 3.2, "width_mm": 1.6 },
+    "1210": { "metric": "3225", "length_mm": 3.2, "width_mm": 2.5 },
+    "1812": { "metric": "4532", "length_mm": 4.5, "width_mm": 3.2 },
+    "2220": { "metric": "5750", "length_mm": 5.7, "width_mm": 5.0 }
+  },
+  "murata": {
+    "0201": "03",
+    "0402": "15",
+    "0603": "18",
+    "0805": "21",
+    "1206": "31",
+    "1210": "32",
+    "1812": "43",
+    "2220": "52"
+  },
+  "samsung": {
+    "0201": "03",
+    "0402": "10",
+    "0603": "16",
+    "0805": "21",
+    "1206": "31",
+    "1210": "32"
+  },
+  "tdk": {
+    "0201": "03",
+    "0402": "15",
+    "0603": "16",
+    "0805": "21",
+    "1206": "31",
+    "1210": "32"
+  }
+}

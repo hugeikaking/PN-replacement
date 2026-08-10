@@ -1,0 +1,32 @@
+{
+  "name": "passive-pn-translator",
+  "version": "1.0.0",
+  "description": "被动件料号翻译 - 物料描述与村田料号互译工具",
+  "type": "module",
+  "scripts": {
+    "dev:h5": "vite",
+    "build:h5": "vite build",
+    "dev:mp-weixin": "vite --mode mp-weixin",
+    "build:mp-weixin": "vite build --mode mp-weixin",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:rules": "vitest run tests/rules/",
+    "lint": "eslint src/ --ext .ts,.vue",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.8",
+    "@types/node": "^20.11.0",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "sass": "^1.71.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.0",
+    "vitest": "^1.2.0",
+    "vue-tsc": "^2.0.0"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "description": "Temperature characteristic codes for ceramic capacitors (EIA Class I & II)",
+  "class1": {
+    "C0G": { "range": "-55°C to +125°C", "change": "0±30 ppm/°C", "aliases": ["NP0", "COG"] },
+    "C0H": { "range": "-55°C to +125°C", "change": "0±60 ppm/°C" },
+    "U2J": { "range": "-55°C to +125°C", "change": "-750±120 ppm/°C" }
+  },
+  "class2": {
+    "X5R": { "range": "-55°C to +85°C", "change": "±15%", "aliases": [] },
+    "X6S": { "range": "-55°C to +105°C", "change": "±22%", "aliases": [] },
+    "X7R": { "range": "-55°C to +125°C", "change": "±15%", "aliases": [] },
+    "X7S": { "range": "-55°C to +125°C", "change": "±22%", "aliases": [] },
+    "X7T": { "range": "-55°C to +125°C", "change": "+22/-33%", "aliases": [] },
+    "X8R": { "range": "-55°C to +150°C", "change": "±15%", "aliases": [] },
+    "Y5V": { "range": "-30°C to +85°C", "change": "+22/-82%", "aliases": [] }
+  },
+  "murata": {
+    "C0G": "5C",
+    "NP0": "5C",
+    "COG": "5C",
+    "X5R": "R6",
+    "X6S": "R6",
+    "X7R": "R7",
+    "X7S": "R7",
+    "X7T": "R7",
+    "X8R": "R8",
+    "Y5V": "F5"
+  },
+  "samsung": {
+    "C0G": "5C",
+    "NP0": "5C",
+    "X5R": "R6",
+    "X7R": "R7",
+    "Y5V": "F5"
+  },
+  "tdk": {
+    "C0G": "5C",
+    "NP0": "5C",
+    "X5R": "R6",
+    "X7R": "R7",
+    "Y5V": "F5"
+  }
+}
