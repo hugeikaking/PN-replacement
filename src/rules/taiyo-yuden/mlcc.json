@@ -1,64 +1,88 @@
 {
   "manufacturer": "taiyo-yuden",
   "componentType": "mlcc",
-  "displayName": "太阳诱电 MLCC (TMK/JMK 系列)",
-  "displayNameEn": "Taiyo Yuden MLCC (TMK/JMK Series)",
-  "description": "Taiyo Yuden multilayer ceramic capacitor numbering (TMK107BJ226MA-T)",
+  "displayName": "太阳诱电 MLCC (MSAS 系列)",
+  "displayNameEn": "Taiyo Yuden MLCC (MSAS Series)",
+  "description": "Taiyo Yuden multilayer ceramic capacitor numbering (MSASU31BB5106KTNA01)",
   "modeB": {
     "segments": [
       {
         "id": "series",
         "position": 0,
-        "length": 3,
+        "length": 4,
         "label": "系列",
         "labelEn": "Series",
-        "description": "TMK/JMK/GMJ 等高容值系列"
-      },
-      {
-        "id": "size",
-        "position": 3,
-        "length": 3,
-        "label": "尺寸",
-        "labelEn": "Chip Size",
-        "map": {
-          "105": "0402",
-          "107": "0603",
-          "212": "0805",
-          "316": "1206",
-          "325": "1210"
-        }
-      },
-      {
-        "id": "tc",
-        "position": 6,
-        "length": 1,
-        "label": "温度特性",
-        "labelEn": "Temperature Characteristic",
-        "map": {
-          "C": "C0G",
-          "B": "X7R",
-          "R": "X5R",
-          "F": "Y5V"
-        }
+        "description": "MSAS = MLCC"
       },
       {
         "id": "voltage",
-        "position": 7,
+        "position": 4,
         "length": 1,
         "label": "额定电压",
         "labelEn": "Rated Voltage",
         "map": {
-          "J": "6.3V",
-          "A": "10V",
-          "C": "16V",
+          "P": "4V",
+          "A": "6.3V",
+          "J": "10V",
+          "L": "16V",
           "E": "25V",
-          "V": "35V",
-          "H": "50V"
+          "T": "35V",
+          "G": "50V",
+          "U": "100V",
+          "H": "250V",
+          "Q": "630V",
+          "S": "2000V"
+        }
+      },
+      {
+        "id": "size",
+        "position": 5,
+        "length": 2,
+        "label": "尺寸",
+        "labelEn": "Chip Size",
+        "map": {
+          "02": "008004",
+          "04": "01005",
+          "06": "0201",
+          "10": "0402",
+          "16": "0603",
+          "21": "0805",
+          "31": "1206",
+          "32": "1210",
+          "45": "1812"
+        }
+      },
+      {
+        "id": "dimTolerance",
+        "position": 7,
+        "length": 1,
+        "label": "尺寸公差码",
+        "labelEn": "Dimension Tolerance"
+      },
+      {
+        "id": "tc",
+        "position": 8,
+        "length": 2,
+        "label": "温度特性",
+        "labelEn": "Temperature Characteristic",
+        "map": {
+          "B5": "X5R",
+          "B7": "X7R",
+          "C6": "X6S",
+          "D6": "X6T",
+          "C7": "X7S",
+          "D7": "X7T",
+          "CG": "C0G",
+          "CH": "C0H",
+          "CJ": "C0J",
+          "CK": "C0K",
+          "UJ": "U2J",
+          "UK": "U2K"
         }
       },
       {
         "id": "capacitance",
-        "position": 8,
+        "position": 10,
         "length": 3,
         "label": "静电容量",
         "labelEn": "Capacitance",
@@ -66,32 +90,42 @@
       },
       {
         "id": "tolerance",
-        "position": 11,
+        "position": 13,
         "length": 1,
         "label": "精度",
         "labelEn": "Tolerance",
         "map": {
+          "A": "±0.05pF",
           "B": "±0.1pF",
           "C": "±0.25pF",
           "D": "±0.5pF",
-          "F": "±1%",
           "G": "±2%",
           "J": "±5%",
           "K": "±10%",
-          "M": "±20%",
-          "Z": "+80/-20%"
+          "M": "±20%"
         }
       },
       {
         "id": "packaging",
-        "position": 13,
-        "length": 2,
+        "position": 14,
+        "length": 1,
         "label": "包装",
         "labelEn": "Packaging",
         "map": {
-          "-T": "编带",
-          "-B": "散装"
+          "W": "178mm编带 1mm间距",
+          "F": "178mm编带 2mm间距",
+          "A": "178mm编带 4mm间距",
+          "T": "178mm编带 4mm间距",
+          "P": "178mm编带 4mm间距",
+          "R": "178mm编带"
         }
+      },
+      {
+        "id": "internal",
+        "position": 15,
+        "length": 4,
+        "label": "内部码",
+        "labelEn": "Internal code"
       }
     ]
   }

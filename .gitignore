@@ -3,3 +3,7 @@ dist/
 .DS_Store
 *.local
 .claude/
+
+# 官方规格文档（用户提供，不提交）
+*.pdf
+*_extracted.txt

@@ -40,7 +40,7 @@ export interface DecodedPart {
 const MFR_PATTERNS: Record<string, { regex: RegExp; label: string }> = {
   'samsung': { regex: /^CL/i, label: '三星 (Samsung)' },
   'tdk': { regex: /^C\d{3}|^CGA|^CEU/i, label: 'TDK' },
-  'taiyo-yuden': { regex: /^[A-Z]{2}K|^TMK|^JMK/i, label: '太阳诱电 (Taiyo Yuden)' },
+  'taiyo-yuden': { regex: /^MS(AS|AR|BL|AY|RL)/i, label: '太阳诱电 (Taiyo Yuden)' },
   'yageo': { regex: /^CC\d{3}|^RC\d{3}|^AC\d{3}/i, label: '国巨 (Yageo)' },
   'walsin': { regex: /^WR|^WF|^WL/i, label: '华新科 (Walsin)' },
   'murata': { regex: /^GRM|^GCM|^GRT|^LQM|^BLM/i, label: '村田 (Murata)' },
