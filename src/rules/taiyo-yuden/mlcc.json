@@ -1,0 +1,98 @@
+{
+  "manufacturer": "taiyo-yuden",
+  "componentType": "mlcc",
+  "displayName": "太阳诱电 MLCC (TMK/JMK 系列)",
+  "displayNameEn": "Taiyo Yuden MLCC (TMK/JMK Series)",
+  "description": "Taiyo Yuden multilayer ceramic capacitor numbering (TMK107BJ226MA-T)",
+  "modeB": {
+    "segments": [
+      {
+        "id": "series",
+        "position": 0,
+        "length": 3,
+        "label": "系列",
+        "labelEn": "Series",
+        "description": "TMK/JMK/GMJ 等高容值系列"
+      },
+      {
+        "id": "size",
+        "position": 3,
+        "length": 3,
+        "label": "尺寸",
+        "labelEn": "Chip Size",
+        "map": {
+          "105": "0402",
+          "107": "0603",
+          "212": "0805",
+          "316": "1206",
+          "325": "1210"
+        }
+      },
+      {
+        "id": "tc",
+        "position": 6,
+        "length": 1,
+        "label": "温度特性",
+        "labelEn": "Temperature Characteristic",
+        "map": {
+          "C": "C0G",
+          "B": "X7R",
+          "R": "X5R",
+          "F": "Y5V"
+        }
+      },
+      {
+        "id": "voltage",
+        "position": 7,
+        "length": 1,
+        "label": "额定电压",
+        "labelEn": "Rated Voltage",
+        "map": {
+          "J": "6.3V",
+          "A": "10V",
+          "C": "16V",
+          "E": "25V",
+          "V": "35V",
+          "H": "50V"
+        }
+      },
+      {
+        "id": "capacitance",
+        "position": 8,
+        "length": 3,
+        "label": "静电容量",
+        "labelEn": "Capacitance",
+        "decoder": "capacitance3Digit"
+      },
+      {
+        "id": "tolerance",
+        "position": 11,
+        "length": 1,
+        "label": "精度",
+        "labelEn": "Tolerance",
+        "map": {
+          "B": "±0.1pF",
+          "C": "±0.25pF",
+          "D": "±0.5pF",
+          "F": "±1%",
+          "G": "±2%",
+          "J": "±5%",
+          "K": "±10%",
+          "M": "±20%",
+          "Z": "+80/-20%"
+        }
+      },
+      {
+        "id": "packaging",
+        "position": 13,
+        "length": 2,
+        "label": "包装",
+        "labelEn": "Packaging",
+        "map": {
+          "-T": "编带",
+          "-B": "散装"
+        }
+      }
+    ]
+  }
+}

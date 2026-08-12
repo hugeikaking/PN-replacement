@@ -1,0 +1,59 @@
+{
+  "manufacturer": "yageo",
+  "componentType": "mlcc",
+  "displayName": "国巨 MLCC (CC 系列)",
+  "displayNameEn": "Yageo MLCC (CC Series)",
+  "description": "Yageo multilayer ceramic capacitor numbering (CC0603KRX7R9BB104)",
+  "modeB": {
+    "segments": [
+      {
+        "id": "series",
+        "position": 0,
+        "length": 2,
+        "label": "系列",
+        "labelEn": "Series",
+        "fixed": "CC",
+        "description": "CC = MLCC"
+      },
+      {
+        "id": "size",
+        "position": 2,
+        "length": 4,
+        "label": "尺寸",
+        "labelEn": "Chip Size"
+      },
+      {
+        "id": "tc",
+        "position": 8,
+        "length": 3,
+        "label": "温度特性",
+        "labelEn": "Temperature Characteristic"
+      },
+      {
+        "id": "voltage",
+        "position": 11,
+        "length": 1,
+        "label": "额定电压",
+        "labelEn": "Rated Voltage",
+        "map": {
+          "4": "4V",
+          "6": "6.3V",
+          "7": "10V",
+          "8": "16V",
+          "9": "25V",
+          "0": "50V",
+          "1": "100V",
+          "2": "200V"
+        }
+      },
+      {
+        "id": "capacitance",
+        "position": 14,
+        "length": 3,
+        "label": "静电容量",
+        "labelEn": "Capacitance",
+        "decoder": "capacitance3Digit"
+      }
+    ]
+  }
+}

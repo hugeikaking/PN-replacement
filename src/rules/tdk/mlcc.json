@@ -1,0 +1,102 @@
+{
+  "manufacturer": "tdk",
+  "componentType": "mlcc",
+  "displayName": "TDK MLCC (C 系列)",
+  "displayNameEn": "TDK MLCC (C Series)",
+  "description": "TDK multilayer ceramic capacitor numbering (C1608X7R1H104K080AA)",
+  "modeB": {
+    "segments": [
+      {
+        "id": "series",
+        "position": 0,
+        "length": 1,
+        "label": "系列",
+        "labelEn": "Series",
+        "fixed": "C",
+        "description": "C = MLCC"
+      },
+      {
+        "id": "size",
+        "position": 1,
+        "length": 4,
+        "label": "尺寸",
+        "labelEn": "Chip Size",
+        "map": {
+          "1005": "0402",
+          "1608": "0603",
+          "2012": "0805",
+          "3216": "1206",
+          "3225": "1210"
+        }
+      },
+      {
+        "id": "tc",
+        "position": 5,
+        "length": 3,
+        "label": "温度特性",
+        "labelEn": "Temperature Characteristic"
+      },
+      {
+        "id": "voltage",
+        "position": 8,
+        "length": 2,
+        "label": "额定电压",
+        "labelEn": "Rated Voltage",
+        "map": {
+          "0J": "6.3V",
+          "1A": "10V",
+          "1C": "16V",
+          "1E": "25V",
+          "1V": "35V",
+          "1H": "50V",
+          "1J": "63V",
+          "2A": "100V",
+          "2D": "200V",
+          "2E": "250V",
+          "2H": "500V"
+        }
+      },
+      {
+        "id": "capacitance",
+        "position": 10,
+        "length": 3,
+        "label": "静电容量",
+        "labelEn": "Capacitance",
+        "decoder": "capacitance3Digit"
+      },
+      {
+        "id": "tolerance",
+        "position": 13,
+        "length": 1,
+        "label": "精度",
+        "labelEn": "Tolerance",
+        "map": {
+          "B": "±0.1pF",
+          "C": "±0.25pF",
+          "D": "±0.5pF",
+          "F": "±1%",
+          "G": "±2%",
+          "J": "±5%",
+          "K": "±10%",
+          "M": "±20%",
+          "Z": "+80/-20%"
+        }
+      },
+      {
+        "id": "thickness",
+        "position": 14,
+        "length": 3,
+        "label": "厚度",
+        "labelEn": "Thickness",
+        "decoder": "thickness3Digit"
+      },
+      {
+        "id": "internal",
+        "position": 17,
+        "length": 2,
+        "label": "内部码",
+        "labelEn": "Internal code"
+      }
+    ]
+  }
+}

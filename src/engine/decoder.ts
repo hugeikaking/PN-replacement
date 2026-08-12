@@ -9,6 +9,10 @@
 import type { KnowledgeRule } from '@/stores/knowledge'
 import type { ModeBRuleSet, ModeBSegment } from './types'
 import samsungMlcc from '../rules/samsung/mlcc.json'
+import tdkMlcc from '../rules/tdk/mlcc.json'
+import taiyoYudenMlcc from '../rules/taiyo-yuden/mlcc.json'
+import yageoMlcc from '../rules/yageo/mlcc.json'
+import walsinMlcc from '../rules/walsin/mlcc.json'
 
 export interface DecodeResult {
   success: boolean
@@ -48,6 +52,10 @@ const MFR_PATTERNS: Record<string, { regex: RegExp; label: string }> = {
  */
 const BUILTIN_MODE_B_RULES: Record<string, ModeBRuleSet> = {
   'samsung/mlcc': samsungMlcc as ModeBRuleSet,
+  'tdk/mlcc': tdkMlcc as ModeBRuleSet,
+  'taiyo-yuden/mlcc': taiyoYudenMlcc as ModeBRuleSet,
+  'yageo/mlcc': yageoMlcc as ModeBRuleSet,
+  'walsin/mlcc': walsinMlcc as ModeBRuleSet,
 }
 
 /**
@@ -205,6 +213,8 @@ function applyDecoder(name: string, code: string): string | null {
   switch (name) {
     case 'capacitance3Digit':
       return decodeCapacitance3Digit(code)
+    case 'thickness3Digit':
+      return decodeThickness3Digit(code)
     default:
       return null
   }
@@ -234,6 +244,16 @@ function formatCapacitanceValue(pF: number): string {
   if (pF >= 1_000_000) return `${trimNum(pF / 1_000_000)}uF`
   if (pF >= 1_000) return `${trimNum(pF / 1_000)}nF`
   return `${trimNum(pF)}pF`
+}
+
+/**
+ * Decode a 3-digit thickness code (e.g. "080" → "0.80mm", "100" → "1.00mm").
+ * Used by TDK where the code represents hundredths of a millimetre.
+ */
+export function decodeThickness3Digit(code: string): string | null {
+  if (!/^\d{3}$/.test(code)) return null
+  const mm = parseInt(code, 10) / 100
+  return `${mm.toFixed(2)}mm`
 }
 
 function trimNum(n: number): string {

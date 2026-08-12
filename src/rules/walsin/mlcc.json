@@ -1,0 +1,98 @@
+{
+  "manufacturer": "walsin",
+  "componentType": "mlcc",
+  "displayName": "华新科 MLCC (WR 系列)",
+  "displayNameEn": "Walsin MLCC (WR Series)",
+  "description": "Walsin multilayer ceramic capacitor numbering (WR06X104JTL)",
+  "modeB": {
+    "segments": [
+      {
+        "id": "series",
+        "position": 0,
+        "length": 2,
+        "label": "系列",
+        "labelEn": "Series",
+        "fixed": "WR",
+        "description": "WR = MLCC"
+      },
+      {
+        "id": "size",
+        "position": 2,
+        "length": 2,
+        "label": "尺寸",
+        "labelEn": "Chip Size",
+        "map": {
+          "04": "0402",
+          "06": "0603",
+          "08": "0805",
+          "12": "1206",
+          "10": "1210",
+          "18": "1812"
+        }
+      },
+      {
+        "id": "tc",
+        "position": 4,
+        "length": 1,
+        "label": "温度特性",
+        "labelEn": "Temperature Characteristic",
+        "map": {
+          "C": "C0G",
+          "X": "X7R",
+          "B": "X5R",
+          "F": "Y5V"
+        }
+      },
+      {
+        "id": "capacitance",
+        "position": 5,
+        "length": 3,
+        "label": "静电容量",
+        "labelEn": "Capacitance",
+        "decoder": "capacitance3Digit"
+      },
+      {
+        "id": "tolerance",
+        "position": 8,
+        "length": 1,
+        "label": "精度",
+        "labelEn": "Tolerance",
+        "map": {
+          "B": "±0.1pF",
+          "C": "±0.25pF",
+          "D": "±0.5pF",
+          "F": "±1%",
+          "G": "±2%",
+          "J": "±5%",
+          "K": "±10%",
+          "M": "±20%",
+          "Z": "+80/-20%"
+        }
+      },
+      {
+        "id": "voltage",
+        "position": 9,
+        "length": 1,
+        "label": "额定电压",
+        "labelEn": "Rated Voltage",
+        "map": {
+          "4": "4V",
+          "6": "6.3V",
+          "7": "10V",
+          "8": "16V",
+          "9": "25V",
+          "0": "50V",
+          "1": "100V",
+          "2": "200V"
+        }
+      },
+      {
+        "id": "packaging",
+        "position": 10,
+        "length": 1,
+        "label": "包装/内部",
+        "labelEn": "Packaging / Internal"
+      }
+    ]
+  }
+}
