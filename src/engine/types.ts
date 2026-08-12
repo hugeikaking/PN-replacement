@@ -72,3 +72,34 @@ export interface TranslationResult {
   warnings: string[]
   error?: string
 }
+
+// ─── Mode B: Part Number → Description decoding rules ──────────────
+
+/** A single segment (field) in a part number for Mode B decoding */
+export interface ModeBSegment {
+  id: string
+  position: number                 // Character offset of this field in the PN
+  length: number                   // Number of characters
+  label: string                    // e.g. "尺寸", "温度特性"
+  labelEn?: string
+  description?: string
+  fixed?: string                   // Expected fixed code at this position (e.g. "CL")
+  map?: Record<string, string>     // Inline code → human-readable value (e.g. "10": "0603")
+  refTable?: string                // Shared table name for code → value lookup
+  decoder?: string                 // Special decoder name (e.g. "capacitance3Digit")
+}
+
+/** Mode B decoding rules */
+export interface ModeBRules {
+  segments: ModeBSegment[]
+}
+
+/** A complete Mode B rule set (independent of Mode A) */
+export interface ModeBRuleSet {
+  manufacturer: string
+  componentType: string
+  displayName?: string
+  displayNameEn?: string
+  description?: string
+  modeB: ModeBRules
+}

@@ -1,0 +1,135 @@
+{
+  "manufacturer": "samsung",
+  "componentType": "mlcc",
+  "displayName": "三星 MLCC (CL 系列)",
+  "displayNameEn": "Samsung MLCC (CL Series)",
+  "description": "Samsung Electro-Mechanics chip multilayer ceramic capacitor numbering system",
+  "modeB": {
+    "segments": [
+      {
+        "id": "series",
+        "position": 0,
+        "length": 2,
+        "label": "系列",
+        "labelEn": "Series",
+        "fixed": "CL",
+        "description": "CL = MLCC"
+      },
+      {
+        "id": "size",
+        "position": 2,
+        "length": 2,
+        "label": "尺寸",
+        "labelEn": "Chip Size",
+        "map": {
+          "03": "0201",
+          "05": "0402",
+          "10": "0603",
+          "21": "0805",
+          "31": "1206",
+          "32": "1210",
+          "42": "1812",
+          "43": "2220"
+        }
+      },
+      {
+        "id": "tc",
+        "position": 4,
+        "length": 1,
+        "label": "温度特性",
+        "labelEn": "Temperature Characteristic",
+        "map": {
+          "C": "C0G",
+          "B": "X7R",
+          "R": "X5R",
+          "A": "X5R",
+          "F": "Y5V",
+          "U": "X6S"
+        }
+      },
+      {
+        "id": "capacitance",
+        "position": 5,
+        "length": 3,
+        "label": "静电容量",
+        "labelEn": "Capacitance",
+        "decoder": "capacitance3Digit"
+      },
+      {
+        "id": "tolerance",
+        "position": 8,
+        "length": 1,
+        "label": "精度",
+        "labelEn": "Tolerance",
+        "map": {
+          "B": "±0.1pF",
+          "C": "±0.25pF",
+          "D": "±0.5pF",
+          "F": "±1%",
+          "G": "±2%",
+          "J": "±5%",
+          "K": "±10%",
+          "M": "±20%",
+          "Z": "+80/-20%"
+        }
+      },
+      {
+        "id": "voltage",
+        "position": 9,
+        "length": 1,
+        "label": "额定电压",
+        "labelEn": "Rated Voltage",
+        "map": {
+          "Q": "6.3V",
+          "P": "10V",
+          "O": "16V",
+          "A": "25V",
+          "L": "35V",
+          "B": "50V",
+          "C": "100V",
+          "D": "200V",
+          "E": "250V",
+          "F": "500V"
+        }
+      },
+      {
+        "id": "thickness",
+        "position": 10,
+        "length": 1,
+        "label": "厚度",
+        "labelEn": "Thickness",
+        "map": {
+          "B": "0.3mm",
+          "C": "0.4mm",
+          "5": "0.5mm",
+          "6": "0.6mm",
+          "8": "0.8mm",
+          "9": "0.9mm",
+          "1": "1.0mm",
+          "2": "1.25mm",
+          "3": "1.6mm",
+          "4": "2.0mm"
+        }
+      },
+      {
+        "id": "internal",
+        "position": 11,
+        "length": 3,
+        "label": "内部码",
+        "labelEn": "Internal code",
+        "description": "制造管理内部代码"
+      },
+      {
+        "id": "packaging",
+        "position": 14,
+        "length": 1,
+        "label": "包装",
+        "labelEn": "Packaging",
+        "map": {
+          "C": "纸带",
+          "N": "散装"
+        }
+      }
+    ]
+  }
+}
