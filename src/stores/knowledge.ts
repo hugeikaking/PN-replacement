@@ -2,12 +2,14 @@
  * stores/knowledge.ts
  *
  * Pinia store for manufacturer part number decoding rules.
- * Users can upload text rules or PDF references.
+ * Users can upload text rules, PDF references, or images.
  * Data persisted to localStorage so one upload benefits everyone.
  */
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+
+export type KnowledgeFileType = 'text' | 'pdf' | 'image'
 
 export interface KnowledgeRule {
   id: string
@@ -16,9 +18,10 @@ export interface KnowledgeRule {
   componentType: string     // "mlcc", "chip-resistor", etc.
   componentLabel: string    // e.g. "MLCC"
   description: string        // Text description of the numbering system
-  fileType: 'text' | 'pdf'
-  pdfDataUrl?: string        // base64 PDF data (only for PDF type)
-  pdfFileName?: string
+  fileType: KnowledgeFileType
+  // Attachment data (for pdf/image types)
+  dataUrl?: string          // base64 data URL of the attachment
+  fileName?: string         // original file name
   createdAt: number
   updatedAt: number
 }
@@ -52,6 +55,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   // ─── Getters ─────────────────────────────────────────
   const textRules = computed(() => rules.value.filter(r => r.fileType === 'text'))
   const pdfRules = computed(() => rules.value.filter(r => r.fileType === 'pdf'))
+  const imageRules = computed(() => rules.value.filter(r => r.fileType === 'image'))
   const ruleCount = computed(() => rules.value.length)
 
   function rulesByManufacturer(mfr: string) {
@@ -89,10 +93,10 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   }
 
   function deleteRule(id: string) {
-    // If PDF, also clean up the inline data to save space
     const rule = rules.value.find(r => r.id === id)
-    if (rule?.pdfDataUrl) {
-      // The base64 string will be GC'd when the rule is removed
+    // Clean up the individually-stored attachment data
+    if (rule && rule.fileType !== 'text') {
+      try { localStorage.removeItem(`pn-kb-data-${rule.id}`) } catch { /* ignore */ }
     }
     rules.value = rules.value.filter(r => r.id !== id)
     persist()
@@ -105,32 +109,30 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   // ─── Persistence ─────────────────────────────────────
   function persist() {
     try {
-      // Split large PDF data to avoid exceeding localStorage limits
-      // Store text rules separately from PDF data
+      // Text rules: store everything inline (no large attachment)
       const textData = rules.value
         .filter(r => r.fileType === 'text')
-        .map(r => ({ ...r, pdfDataUrl: undefined }))
 
-      const pdfMeta = rules.value
-        .filter(r => r.fileType === 'pdf')
+      // Attachment rules (pdf/image): store metadata inline, data in separate keys
+      const attachmentMeta = rules.value
+        .filter(r => r.fileType !== 'text')
         .map(r => ({
           id: r.id, manufacturer: r.manufacturer, manufacturerLabel: r.manufacturerLabel,
           componentType: r.componentType, componentLabel: r.componentLabel,
-          description: r.description, fileType: r.fileType, pdfFileName: r.pdfFileName,
+          description: r.description, fileType: r.fileType, fileName: r.fileName,
           createdAt: r.createdAt, updatedAt: r.updatedAt
         }))
 
       localStorage.setItem('pn-kb-text', JSON.stringify(textData))
-      localStorage.setItem('pn-kb-pdf-meta', JSON.stringify(pdfMeta))
+      localStorage.setItem('pn-kb-meta', JSON.stringify(attachmentMeta))
 
-      // Store PDF data individually (each in its own key to avoid exceeding limits)
+      // Store attachment data individually (each in its own key)
       for (const r of rules.value) {
-        if (r.fileType === 'pdf' && r.pdfDataUrl) {
+        if (r.fileType !== 'text' && r.dataUrl) {
           try {
-            localStorage.setItem(`pn-kb-pdf-${r.id}`, r.pdfDataUrl)
+            localStorage.setItem(`pn-kb-data-${r.id}`, r.dataUrl)
           } catch {
-            // PDF too large for localStorage - mark it
-            console.warn(`PDF too large for localStorage: ${r.pdfFileName}`)
+            console.warn(`Attachment too large for localStorage: ${r.fileName}`)
           }
         }
       }
@@ -143,18 +145,23 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     if (isLoaded.value) return
     try {
       const textData = localStorage.getItem('pn-kb-text')
-      const pdfMeta = localStorage.getItem('pn-kb-pdf-meta')
+      const meta = localStorage.getItem('pn-kb-meta')
+
+      // Migrate old PDF keys if present (backward compatibility)
+      const legacyPdfMeta = localStorage.getItem('pn-kb-pdf-meta')
+      const usingLegacy = !meta && legacyPdfMeta
 
       const textRules: KnowledgeRule[] = textData ? JSON.parse(textData) : []
-      const pdfMetaList: KnowledgeRule[] = pdfMeta ? JSON.parse(pdfMeta) : []
+      const metaList: KnowledgeRule[] = meta ? JSON.parse(meta) : (legacyPdfMeta ? JSON.parse(legacyPdfMeta) : [])
 
-      // Restore PDF data
-      const pdfRules: KnowledgeRule[] = pdfMetaList.map(meta => {
-        const dataUrl = localStorage.getItem(`pn-kb-pdf-${meta.id}`) || ''
-        return { ...meta, pdfDataUrl: dataUrl }
+      // Restore attachment data (check both new and legacy keys)
+      const attachmentRules: KnowledgeRule[] = metaList.map(meta => {
+        const newKey = localStorage.getItem(`pn-kb-data-${meta.id}`)
+        const legacyKey = usingLegacy ? localStorage.getItem(`pn-kb-pdf-${meta.id}`) : ''
+        return { ...meta, dataUrl: newKey || legacyKey || '' }
       })
 
-      rules.value = [...textRules, ...pdfRules].sort((a, b) => b.createdAt - a.createdAt)
+      rules.value = [...textRules, ...attachmentRules].sort((a, b) => b.createdAt - a.createdAt)
     } catch (e) {
       console.warn('Failed to load knowledge base:', e)
       rules.value = []
@@ -175,7 +182,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   load()
 
   return {
-    rules, isLoaded, textRules, pdfRules, ruleCount,
+    rules, isLoaded, textRules, pdfRules, imageRules, ruleCount,
     rulesByManufacturer, rulesByComponent,
     addRule, updateRule, deleteRule, getRule,
     getComponentLabel, getManufacturerLabel,

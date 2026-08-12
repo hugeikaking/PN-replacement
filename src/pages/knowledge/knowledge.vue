@@ -26,8 +26,8 @@
         <div class="kb-rule-card__header">
           <span class="kb-rule-card__mfr">{{ rule.manufacturerLabel }}</span>
           <span class="kb-rule-card__type">{{ rule.componentLabel }}</span>
-          <span class="kb-rule-card__format" :class="rule.fileType === 'pdf' ? 'kb-rule-card__format--pdf' : 'kb-rule-card__format--text'">
-            {{ rule.fileType === 'pdf' ? 'PDF' : '文字' }}
+          <span class="kb-rule-card__format" :class="`kb-rule-card__format--${rule.fileType}`">
+            {{ fileTypeLabel(rule.fileType) }}
           </span>
         </div>
         <div class="kb-rule-card__desc">{{ rule.description }}</div>
@@ -35,11 +35,18 @@
           <span class="kb-rule-card__date">{{ formatDate(rule.createdAt) }}</span>
           <div class="kb-rule-card__actions">
             <button
-              v-if="rule.fileType === 'pdf' && rule.pdfDataUrl"
+              v-if="rule.fileType === 'pdf' && rule.dataUrl"
               class="kb-rule-card__btn kb-rule-card__btn--view"
               @click="viewPdf(rule)"
             >
               📄 查看PDF
+            </button>
+            <button
+              v-if="rule.fileType === 'image' && rule.dataUrl"
+              class="kb-rule-card__btn kb-rule-card__btn--view"
+              @click="viewImage(rule)"
+            >
+              🖼️ 查看图片
             </button>
             <button class="kb-rule-card__btn kb-rule-card__btn--del" @click="confirmDelete(rule)">
               🗑
@@ -98,12 +105,17 @@
                 class="kb-tab"
                 :class="{ 'kb-tab--active': form.fileType === 'text' }"
                 @click="form.fileType = 'text'"
-              >✏️ 文字录入</button>
+              >✏️ 文字</button>
               <button
                 class="kb-tab"
                 :class="{ 'kb-tab--active': form.fileType === 'pdf' }"
                 @click="form.fileType = 'pdf'"
-              >📎 上传PDF</button>
+              >📎 PDF</button>
+              <button
+                class="kb-tab"
+                :class="{ 'kb-tab--active': form.fileType === 'image' }"
+                @click="form.fileType = 'image'"
+              >🖼️ 图片</button>
             </div>
           </label>
 
@@ -133,8 +145,8 @@
             <label class="kb-field">
               <span class="kb-field__label">PDF文件</span>
               <div class="kb-field__upload" @click="triggerFileInput">
-                <span v-if="!form.pdfFileName">📁 点击选择PDF文件</span>
-                <span v-else class="kb-field__file-selected">📄 {{ form.pdfFileName }}</span>
+                <span v-if="!form.fileName">📁 点击选择PDF文件</span>
+                <span v-else class="kb-field__file-selected">📄 {{ form.fileName }}</span>
               </div>
               <input
                 ref="fileInput"
@@ -143,8 +155,41 @@
                 style="display:none"
                 @change="onFilePicked"
               />
-              <div v-if="pdfTooLarge" class="kb-field__error">
-                PDF文件过大（超过5MB），请压缩后重试或使用文字录入。
+              <div v-if="tooLarge" class="kb-field__error">
+                文件过大（超过5MB），请压缩后重试或使用文字录入。
+              </div>
+            </label>
+          </template>
+
+          <!-- Image Upload -->
+          <template v-if="form.fileType === 'image'">
+            <label class="kb-field">
+              <span class="kb-field__label">规则说明</span>
+              <input
+                v-model="form.description"
+                class="kb-field__input"
+                placeholder="简要说明图片内容，如：三星MLCC料号编码规则截图"
+              />
+            </label>
+            <label class="kb-field">
+              <span class="kb-field__label">图片文件</span>
+              <div class="kb-field__upload" @click="triggerFileInput">
+                <span v-if="!form.fileName">🖼️ 点击选择图片（支持 JPG/PNG/GIF/WebP/BMP/SVG）</span>
+                <span v-else class="kb-field__file-selected">🖼️ {{ form.fileName }}</span>
+              </div>
+              <input
+                ref="fileInput"
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,image/*"
+                style="display:none"
+                @change="onFilePicked"
+              />
+              <div v-if="tooLarge" class="kb-field__error">
+                图片过大（超过5MB），请压缩后重试。
+              </div>
+              <!-- Image Preview -->
+              <div v-if="form.dataUrl" class="kb-field__preview">
+                <img :src="form.dataUrl" class="kb-field__preview-img" alt="预览" />
               </div>
             </label>
           </template>
@@ -161,17 +206,36 @@
     <div v-if="viewingPdf" class="kb-modal-overlay" @click.self="viewingPdf = null">
       <div class="kb-modal kb-modal--wide">
         <div class="kb-modal__header">
-          <span>{{ viewingPdf.pdfFileName || 'PDF 预览' }}</span>
+          <span>{{ viewingPdf.fileName || 'PDF 预览' }}</span>
           <button class="kb-modal__close" @click="viewingPdf = null">✕</button>
         </div>
         <div class="kb-modal__body">
           <iframe
-            v-if="viewingPdf.pdfDataUrl"
-            :src="viewingPdf.pdfDataUrl"
+            v-if="viewingPdf.dataUrl"
+            :src="viewingPdf.dataUrl"
             class="kb-pdf-viewer"
             frameborder="0"
           ></iframe>
           <p v-else class="kb-page__empty-desc">PDF数据不可用</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div v-if="viewingImage" class="kb-modal-overlay" @click.self="viewingImage = null">
+      <div class="kb-modal kb-modal--wide">
+        <div class="kb-modal__header">
+          <span>{{ viewingImage.fileName || '图片预览' }}</span>
+          <button class="kb-modal__close" @click="viewingImage = null">✕</button>
+        </div>
+        <div class="kb-modal__body kb-modal__body--image">
+          <img
+            v-if="viewingImage.dataUrl"
+            :src="viewingImage.dataUrl"
+            class="kb-image-viewer"
+            alt="规则图片"
+          />
+          <p v-else class="kb-page__empty-desc">图片数据不可用</p>
         </div>
       </div>
     </div>
@@ -200,7 +264,7 @@ import { ref, reactive, computed } from 'vue'
 import { useKnowledgeStore } from '@/stores/knowledge'
 import { navigateTo } from '@/utils/router'
 import { showToast } from '@/utils/clipboard'
-import type { KnowledgeRule } from '@/stores/knowledge'
+import type { KnowledgeRule, KnowledgeFileType } from '@/stores/knowledge'
 
 const store = useKnowledgeStore()
 
@@ -215,25 +279,33 @@ function formatDate(ts: number): string {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
 
+function fileTypeLabel(type: KnowledgeFileType): string {
+  switch (type) {
+    case 'text': return '文字'
+    case 'pdf': return 'PDF'
+    case 'image': return '图片'
+  }
+}
+
 // ─── Editor ────────────────────────────────────────────
 const showEditor = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
-const pdfTooLarge = ref(false)
-const MAX_PDF_SIZE = 5 * 1024 * 1024 // 5MB limit for localStorage
+const tooLarge = ref(false)
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB limit for localStorage
 
 const form = reactive({
   manufacturer: '',
   componentType: '',
-  fileType: 'text' as 'text' | 'pdf',
+  fileType: 'text' as KnowledgeFileType,
   description: '',
-  pdfDataUrl: '',
-  pdfFileName: '',
+  dataUrl: '',
+  fileName: '',
 })
 
 const canSave = computed(() => {
   if (!form.manufacturer || !form.componentType) return false
   if (form.fileType === 'text') return form.description.trim().length > 0
-  return form.pdfDataUrl.length > 0
+  return form.dataUrl.length > 0
 })
 
 function triggerFileInput() {
@@ -248,17 +320,17 @@ function onFilePicked(e: Event) {
   const file = input.files?.[0]
   if (!file) return
 
-  if (file.size > MAX_PDF_SIZE) {
-    pdfTooLarge.value = true
+  if (file.size > MAX_FILE_SIZE) {
+    tooLarge.value = true
     return
   }
 
-  pdfTooLarge.value = false
-  form.pdfFileName = file.name
+  tooLarge.value = false
+  form.fileName = file.name
 
   const reader = new FileReader()
   reader.onload = () => {
-    form.pdfDataUrl = reader.result as string
+    form.dataUrl = reader.result as string
   }
   reader.readAsDataURL(file)
 }
@@ -268,9 +340,9 @@ function resetForm() {
   form.componentType = ''
   form.fileType = 'text'
   form.description = ''
-  form.pdfDataUrl = ''
-  form.pdfFileName = ''
-  pdfTooLarge.value = false
+  form.dataUrl = ''
+  form.fileName = ''
+  tooLarge.value = false
 }
 
 function saveRule() {
@@ -283,8 +355,8 @@ function saveRule() {
     componentLabel: store.getComponentLabel(form.componentType),
     description: form.description,
     fileType: form.fileType,
-    pdfDataUrl: form.fileType === 'pdf' ? form.pdfDataUrl : undefined,
-    pdfFileName: form.fileType === 'pdf' ? form.pdfFileName : undefined,
+    dataUrl: form.fileType !== 'text' ? form.dataUrl : undefined,
+    fileName: form.fileType !== 'text' ? form.fileName : undefined,
   })
 
   showToast('规则已保存，所有人均可使用')
@@ -292,10 +364,16 @@ function saveRule() {
   showEditor.value = false
 }
 
-// ─── PDF Viewer ────────────────────────────────────────
+// ─── Viewers ───────────────────────────────────────────
 const viewingPdf = ref<KnowledgeRule | null>(null)
+const viewingImage = ref<KnowledgeRule | null>(null)
+
 function viewPdf(rule: KnowledgeRule) {
   viewingPdf.value = rule
+}
+
+function viewImage(rule: KnowledgeRule) {
+  viewingImage.value = rule
 }
 
 // ─── Delete ────────────────────────────────────────────
@@ -421,6 +499,7 @@ function doDelete() {
 
     &--text { background: #E8F0FE; color: #1967D2; }
     &--pdf { background: #FCE8E6; color: #C5221F; }
+    &--image { background: #E6F4EA; color: #137333; }
   }
 
   &__desc {
@@ -512,6 +591,12 @@ function doDelete() {
     padding: var(--spacing-lg);
     overflow-y: auto;
     flex: 1;
+
+    &--image {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 
   &__footer {
@@ -581,6 +666,7 @@ function doDelete() {
   &__file-selected {
     color: var(--color-primary);
     font-weight: 500;
+    word-break: break-all;
   }
 
   &__error {
@@ -588,11 +674,26 @@ function doDelete() {
     font-size: var(--font-size-xs);
     color: var(--color-danger);
   }
+
+  &__preview {
+    margin-top: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-bg);
+  }
+
+  &__preview-img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    display: block;
+  }
 }
 
 .kb-tab {
   flex: 1;
-  padding: 10px;
+  padding: 10px 6px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
@@ -600,6 +701,7 @@ function doDelete() {
   color: var(--color-text-secondary);
   cursor: pointer;
   text-align: center;
+  white-space: nowrap;
 
   &--active {
     border-color: var(--color-primary);
@@ -638,6 +740,14 @@ function doDelete() {
 .kb-pdf-viewer {
   width: 100%;
   height: 60vh;
+  border-radius: var(--radius-sm);
+}
+
+// ─── Image Viewer ──────────────────────────────────────
+.kb-image-viewer {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
   border-radius: var(--radius-sm);
 }
 </style>
