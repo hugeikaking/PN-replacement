@@ -46,7 +46,7 @@
         <textarea
           class="mode-b-input__textarea"
           :value="store.currentInput"
-          :placeholder="'输入各厂家的被动元件料号，每行一个，例如：&#10;CL10B104KO8NNNC&#10;C1608X7R1H104K080AA&#10;JMK107BBJ226MA-T'"
+          :placeholder="'输入各厂家的被动元件料号，每行一个，例如：\nCL10B104KO8NNNC\nC1608X7R1H104K080AA\nJMK107BBJ226MA-T'"
           rows="3"
           @input="store.setInput(($event.target as HTMLTextAreaElement).value)"
         ></textarea>
