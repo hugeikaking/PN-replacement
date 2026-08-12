@@ -95,6 +95,7 @@ describe('decodePartNumber (Yageo MLCC)', () => {
     expect(r.success).toBe(true)
     expect(r.manufacturer).toBe('yageo')
     expect(value(r, 'size')).toBe('0603')
+    expect(value(r, 'tolerance')).toBe('±10%')
     expect(value(r, 'tc')).toBe('X7R')
     expect(value(r, 'voltage')).toBe('25V')
     expect(value(r, 'capacitance')).toBe('100nF')

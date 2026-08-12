@@ -23,6 +23,24 @@
         "labelEn": "Chip Size"
       },
       {
+        "id": "tolerance",
+        "position": 6,
+        "length": 1,
+        "label": "精度",
+        "labelEn": "Tolerance",
+        "map": {
+          "B": "±0.1pF",
+          "C": "±0.25pF",
+          "D": "±0.5pF",
+          "F": "±1%",
+          "G": "±2%",
+          "J": "±5%",
+          "K": "±10%",
+          "M": "±20%",
+          "Z": "+80/-20%"
+        }
+      },
+      {
         "id": "tc",
         "position": 8,
         "length": 3,
