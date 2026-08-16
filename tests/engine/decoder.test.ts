@@ -78,15 +78,16 @@ describe('decodePartNumber (TDK MLCC)', () => {
 })
 
 describe('decodePartNumber (Taiyo Yuden MLCC)', () => {
-  it('decodes MSASU31BB5106KTNA01 field by field', () => {
-    const r = decodePartNumber('MSASU31BB5106KTNA01')
+  it('decodes MSASP063EB5475MFNA01 field by field', () => {
+    const r = decodePartNumber('MSASP063EB5475MFNA01')
     expect(r.success).toBe(true)
     expect(r.manufacturer).toBe('taiyo-yuden')
-    expect(value(r, 'size')).toBe('1206')
+    expect(value(r, 'size')).toBe('0201')
+    expect(value(r, 'thickness')).toBe('0.3mm')
     expect(value(r, 'tc')).toBe('X5R')
-    expect(value(r, 'capacitance')).toBe('10uF')
-    expect(value(r, 'tolerance')).toBe('±10%')
-    expect(value(r, 'voltage')).toBe('100V')
+    expect(value(r, 'capacitance')).toBe('4.7uF')
+    expect(value(r, 'tolerance')).toBe('±20%')
+    expect(value(r, 'voltage')).toBe('2.5V')
   })
 })
 

@@ -3,7 +3,7 @@
   "componentType": "mlcc",
   "displayName": "太阳诱电 MLCC (MSAS 系列)",
   "displayNameEn": "Taiyo Yuden MLCC (MSAS Series)",
-  "description": "Taiyo Yuden multilayer ceramic capacitor numbering (MSASU31BB5106KTNA01)",
+  "description": "Taiyo Yuden multilayer ceramic capacitor numbering (MSASP063EB5475MFNA01)",
   "modeB": {
     "segments": [
       {
@@ -21,17 +21,18 @@
         "label": "额定电压",
         "labelEn": "Rated Voltage",
         "map": {
-          "P": "4V",
-          "A": "6.3V",
-          "J": "10V",
-          "L": "16V",
-          "E": "25V",
-          "T": "35V",
-          "G": "50V",
-          "U": "100V",
-          "H": "250V",
-          "Q": "630V",
-          "S": "2000V"
+          "P": "2.5V",
+          "A": "4V",
+          "J": "6.3V",
+          "L": "10V",
+          "E": "16V",
+          "T": "25V",
+          "G": "35V",
+          "U": "50V",
+          "H": "100V",
+          "Q": "250V",
+          "S": "630V",
+          "X": "2000V"
         }
       },
       {
@@ -53,15 +54,43 @@
         }
       },
       {
-        "id": "dimTolerance",
+        "id": "thickness",
         "position": 7,
+        "length": 1,
+        "label": "厚度",
+        "labelEn": "Thickness",
+        "map": {
+          "1": "0.125mm",
+          "H": "0.13mm",
+          "E": "0.18mm",
+          "2": "0.2mm",
+          "3": "0.3mm",
+          "P": "0.33mm",
+          "4": "0.4mm",
+          "K": "0.45mm",
+          "5": "0.5mm",
+          "6": "0.6mm",
+          "U": "0.75mm",
+          "8": "0.8mm",
+          "9": "0.85mm",
+          "Q": "1.15mm",
+          "G": "1.25mm",
+          "L": "1.6mm",
+          "N": "1.9mm",
+          "Y": "2.0mm max",
+          "M": "2.5mm"
+        }
+      },
+      {
+        "id": "dimTolerance",
+        "position": 8,
         "length": 1,
         "label": "尺寸公差码",
         "labelEn": "Dimension Tolerance"
       },
       {
         "id": "tc",
-        "position": 8,
+        "position": 9,
         "length": 2,
         "label": "温度特性",
         "labelEn": "Temperature Characteristic",
@@ -82,7 +111,7 @@
       },
       {
         "id": "capacitance",
-        "position": 10,
+        "position": 11,
         "length": 3,
         "label": "静电容量",
         "labelEn": "Capacitance",
@@ -90,7 +119,7 @@
       },
       {
         "id": "tolerance",
-        "position": 13,
+        "position": 14,
         "length": 1,
         "label": "精度",
         "labelEn": "Tolerance",
@@ -107,7 +136,7 @@
       },
       {
         "id": "packaging",
-        "position": 14,
+        "position": 15,
         "length": 1,
         "label": "包装",
         "labelEn": "Packaging",
@@ -122,7 +151,7 @@
       },
       {
         "id": "internal",
-        "position": 15,
+        "position": 16,
         "length": 4,
         "label": "内部码",
         "labelEn": "Internal code"
