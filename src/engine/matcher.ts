@@ -77,7 +77,7 @@ function matchSegment(
   }
   // 3. Reference table lookup
   else if (segment.refTable && segment.refKey && params[segment.id]) {
-    code = lookupRefTable(segment.refTable, segment.refKey, params[segment.id]!)
+    code = lookupRefTable(segment.refTable, segment.refKey, params[segment.id]!) ?? undefined
     value = params[segment.id]
   }
   // 4. Inline options lookup

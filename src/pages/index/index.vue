@@ -14,7 +14,7 @@
         icon="🔄"
         title="描述 → 村田料号"
         subtitle="Mode A: Description → Murata PN"
-        description="输入物料参数，获取村田被动元件完整料号。支持 MLCC、电阻、电感、磁珠。"
+        description="输入 MLCC 参数，查询已导入村田规格中的真实料号。支持多行输入。"
         @click="goTranslate('A')"
       />
 
@@ -22,7 +22,7 @@
         icon="🔍"
         title="料号 → 规格描述"
         subtitle="Mode B: Part Number → Specification"
-        description="根据知识库中的编码规则，拆解各厂家料号为详细参数规格。"
+        description="拆解已支持系列的 MLCC 料号，再按规格查询村田候选。"
         @click="goTranslate('B')"
       />
     </div>
@@ -53,7 +53,7 @@
         v-for="item in store.recentHistory.slice(0, 3)"
         :key="item.id"
         class="history-item"
-        @click="store.setInput(item.input); goTranslate(item.mode)"
+        @click="goTranslate(item.mode); store.setInput(item.input)"
       >
         <div class="history-item__input">{{ item.input }}</div>
         <div class="history-item__result" v-if="item.results[0]?.success">
@@ -67,8 +67,8 @@
 
     <!-- Footer -->
     <div class="home-page__footer">
-      <p>支持村田、三星、TDK、太阳诱电、国巨、华新科</p>
-      <p class="home-page__footer-version">v1.0.0 · Mode B 即将推出</p>
+      <p>村田官方记录 · 三星 CL · TDK C · 太阳诱电 MS</p>
+      <p class="home-page__footer-version">v2.6.6 · 本地规格查询与批量翻译</p>
     </div>
   </div>
 </template>

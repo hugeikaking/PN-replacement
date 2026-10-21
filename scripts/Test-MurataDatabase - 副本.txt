@@ -1,0 +1,182 @@
+[CmdletBinding()]
+param(
+    [string]$InputPath = (Join-Path $env:USERPROFILE 'Desktop\Murata_MLCC.json'),
+    [string]$OutputDirectory = (Join-Path $env:USERPROFILE 'Desktop\Murata_Data_Check'),
+    [ValidateRange(1,10000)][int]$PreviewCount = 1000,
+    [ValidateRange(1,10000000)][int]$MaxScan = 20000,
+    [ValidateRange(1,100)][int]$SamplesPerSeries = 5
+)
+$ErrorActionPreference = 'Stop'
+if ($MaxScan -lt $PreviewCount) { throw 'MaxScan must be >= PreviewCount.' }
+$source = Get-Item -LiteralPath $InputPath
+if ($source.PSIsContainer) { throw 'Input must be a JSON file.' }
+# C# reads buffered characters; never loads the whole product database.
+if (-not ('PnrepProductReader' -as [type])) {
+Add-Type -TypeDefinition @"
+using System;
+using System.IO;
+using System.Text;
+public sealed class PnrepProductReader : IDisposable {
+    private readonly StreamReader r;
+    private bool first = true;
+    private bool finished = false;
+    public PnrepProductReader(string path) {
+        r = new StreamReader(path, new UTF8Encoding(false, true), true, 65536);
+        try {
+            Expect('{');
+            while (true) {
+                if (Peek() == '}') throw new InvalidDataException("Products array not found.");
+                string key = ReadValue(true);
+                Expect(':');
+                if (key == "\"Products\"") { Expect('['); break; }
+                ReadValue(false);
+                Expect(',');
+            }
+        } catch { r.Dispose(); throw; }
+    }
+    private int Peek() {
+        while (r.Peek() >= 0 && Char.IsWhiteSpace((char)r.Peek())) r.Read();
+        return r.Peek();
+    }
+    private void Expect(char c) {
+        if (Peek() != c) throw new InvalidDataException("Expected " + c);
+        r.Read();
+    }
+    // Balanced JSON value scanner, aware of quotes and escaped characters.
+    private string ReadValue(bool capture) {
+        int ch = Peek();
+        if (ch < 0) throw new InvalidDataException("Unexpected EOF.");
+        StringBuilder b = capture ? new StringBuilder() : null;
+        bool quoted = false, escaped = false;
+        int depth = 0;
+        bool composite = ch == '{' || ch == '[';
+        bool stringValue = ch == '"';
+        while (true) {
+            ch = r.Peek();
+            if (ch < 0) throw new InvalidDataException("Truncated JSON value.");
+            if (!composite && !stringValue && (ch == ',' || ch == '}' || Char.IsWhiteSpace((char)ch))) break;
+            r.Read();
+            char c = (char)ch;
+            if (capture) {
+                b.Append(c);
+                if (b.Length > 16777216) throw new InvalidDataException("Single product exceeds 16MB.");
+            }
+            if (quoted) {
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == '"') { quoted = false; if (stringValue) break; }
+            } else {
+                if (c == '"') quoted = true;
+                else if (c == '{' || c == '[') depth++;
+                else if (c == '}' || c == ']') { depth--; if (composite && depth == 0) break; }
+            }
+        }
+        return capture ? b.ToString() : null;
+    }
+    public string Next() {
+        if (finished) return null;
+        if (Peek() == ']') {
+            r.Read();
+            // Consume remaining root properties without retaining them.
+            while (Peek() == ',') { r.Read(); ReadValue(false); Expect(':'); ReadValue(false); }
+            Expect('}');
+            if (Peek() != -1) throw new InvalidDataException("Unexpected data after root.");
+            finished = true; return null;
+        }
+        if (!first) { Expect(','); if (Peek() == ']') throw new InvalidDataException("Trailing comma."); }
+        if (Peek() != '{') throw new InvalidDataException("Products must contain objects.");
+        first = false;
+        return ReadValue(true);
+    }
+    public void Dispose() { r.Dispose(); }
+}
+"@
+}
+$runName = 'check-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0,6)
+$runDir = Join-Path $OutputDirectory $runName
+New-Item -ItemType Directory -Path $runDir -Force | Out-Null
+$utf8 = New-Object System.Text.UTF8Encoding($true)
+$previewWriter = New-Object System.IO.StreamWriter((Join-Path $runDir 'preview.csv'), $false, $utf8)
+$sampleWriter = New-Object System.IO.StreamWriter((Join-Path $runDir 'series-samples.csv'), $false, $utf8)
+$rawWriter = New-Object System.IO.StreamWriter((Join-Path $runDir 'selected-products.jsonl'), $false, $utf8)
+$seriesCounts = @{ GRM=0; GCM=0; KRM=0; DK1=0 }
+$specFields = @('Capacitance','CapacitanceText','ToleranceCapacitance','RatedVoltageDC','RatedVoltageDCText','RatedVoltageAC','RatedVoltageACText','X1RatedVoltageAC','X1RatedVoltageACText','X1RatedVoltageDC','X1RatedVoltageDCText','X2RatedVoltageAC','X2RatedVoltageACText','X2RatedVoltageDC','X2RatedVoltageDCText','Y1RatedVoltageAC','Y1RatedVoltageACText','Y1RatedVoltageDC','Y1RatedVoltageDCText','Y2RatedVoltageAC','Y2RatedVoltageACText','Y2RatedVoltageDC','Y2RatedVoltageDCText','SizeCode','SizeCodeInInch','SizecodeMm','Length','LengthText','Width','WidthText','Thickness','ThicknessText','ThicknessMax','ThicknessMaxText','TemperatureCharacteristics','TemperatureCharacteristicsCompliedStandard','MaxOperatingTemperature','MaxOperatingTemperatureText','OperatingTemperatureRange')
+$rootFields = @('Partno','PartnoWithoutPackageCode','ProductName','Series','Status','NewProduct','Application','ProductDetailUrl')
+$paths = @($rootFields) + @($specFields | ForEach-Object { 'Specs.' + $_ }) + @('ComplianceInfo.AecQ200Support','ComplianceInfo.Rohs','ComplianceInfo.Reach','MediaFileUrls.SpecificationsSheet')
+$stats = @{}
+function Read-Field($Object, [string]$Path) {
+    $v = $Object
+    foreach ($key in $Path.Split('.')) {
+        if ($null -eq $v) { return $null }
+        $prop = $v.PSObject.Properties[$key]
+        if ($null -eq $prop) { return $null }
+        $v = $prop.Value
+    }
+    return ,$v
+}
+function Cell($Value) {
+    if ($null -eq $Value) { return '' }
+    if ($Value -is [string]) { return $Value }
+    if ($Value -is [ValueType]) { return [Convert]::ToString($Value, [Globalization.CultureInfo]::InvariantCulture) }
+    return ConvertTo-Json -InputObject $Value -Compress -Depth 100
+}
+function Write-CsvRow($Writer, $Row, [bool]$Header) {
+    $lines = @($Row | ConvertTo-Csv -NoTypeInformation)
+    if ($Header) { $Writer.WriteLine($lines[0]) }
+    $Writer.WriteLine($lines[1])
+}
+$reader = $null
+$scanned=0; $preview=0; $sampleTotal=0; $completed=$false; $stopReason='max-scan'
+try {
+    $reader = New-Object PnrepProductReader($source.FullName)
+    while ($scanned -lt $MaxScan) {
+        $raw = $reader.Next()
+        if ($null -eq $raw) { $stopReason='end-of-products'; break }
+        $p = ConvertFrom-Json -InputObject $raw
+        $scanned++
+        $pn = [string](Read-Field $p 'Partno')
+        if ([string]::IsNullOrWhiteSpace($pn)) { throw "Product $scanned has no Partno; inspect source schema." }
+        foreach ($path in $paths) {
+            if (-not $stats.ContainsKey($path)) { $stats[$path] = @{Present=0; Examples=(New-Object System.Collections.Generic.List[string]); Types=@{}} }
+            $v = Read-Field $p $path
+            if ($null -ne $v -and -not ($v -is [string] -and $v.Length -eq 0)) {
+                $s = $stats[$path]; $s.Present++
+                $s.Types[$v.GetType().FullName] = $true
+                $example = Cell $v
+                if ($s.Examples.Count -lt 3 -and -not $s.Examples.Contains($example)) { $s.Examples.Add($example) }
+            }
+        }
+        $selected = $false
+        $row = [ordered]@{SampleOrigin='official-file'; ScanIndex=$scanned}
+        foreach ($path in $paths) { $row[$path] = Cell (Read-Field $p $path) }
+        $row = [pscustomobject]$row
+        if ($preview -lt $PreviewCount) {
+            Write-CsvRow $previewWriter $row ($preview -eq 0)
+            $preview++; $selected=$true
+        }
+        foreach ($prefix in @('GRM','GCM','KRM','DK1')) {
+            if ($pn.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase) -and $seriesCounts[$prefix] -lt $SamplesPerSeries) {
+                Write-CsvRow $sampleWriter $row ($sampleTotal -eq 0)
+                $seriesCounts[$prefix]++; $sampleTotal++; $selected=$true
+            }
+        }
+        if ($selected) { $rawWriter.WriteLine((ConvertTo-Json -InputObject $p -Compress -Depth 100)) }
+        if ($scanned % 1000 -eq 0) { Write-Host "Scanned $scanned products; preview $preview." }
+        if ($preview -ge $PreviewCount -and $seriesCounts.GRM -ge $SamplesPerSeries -and $seriesCounts.GCM -ge $SamplesPerSeries -and $seriesCounts.KRM -ge $SamplesPerSeries) { $stopReason='preview-and-target-series-collected'; break }
+    }
+    $completed=$true
+} finally {
+    if ($null -ne $reader) { $reader.Dispose() }
+    $previewWriter.Dispose(); $sampleWriter.Dispose(); $rawWriter.Dispose()
+    [ordered]@{ ToolVersion=1; Source=$source.FullName; SourceBytes=$source.Length; SourceModifiedUtc=$source.LastWriteTimeUtc.ToString('o'); Completed=$completed; Scanned=$scanned; PreviewRows=$preview; SeriesSamples=$seriesCounts; StopReason=$(if ($completed) {$stopReason} else {'error'}); FullDatabaseVerified=$false; UnitsVerified=$false; GeneratedAt=(Get-Date).ToString('o') } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $runDir 'run-summary.json') -Encoding UTF8
+    $fieldRows = foreach ($path in $paths) {
+        $s = $stats[$path]
+        [pscustomobject]@{Field=$path; NonEmptyCount=$(if ($s) {$s.Present} else {0}); Scanned=$scanned; ObservedTypes=$(if ($s) {($s.Types.Keys | Sort-Object) -join ';'} else {''}); Examples=$(if ($s) {$s.Examples -join ' | '} else {''}); UnitVerified='No'}
+    }
+    $fieldRows | Export-Csv -LiteralPath (Join-Path $runDir 'field-profile.csv') -NoTypeInformation -Encoding UTF8
+}
+Write-Host "Saved validation files: $runDir"
+Write-Host "Preview rows: $preview / $PreviewCount; scanned: $scanned; reason: $stopReason"
+foreach ($prefix in @('GRM','GCM','KRM','DK1')) { Write-Host "$prefix samples: $($seriesCounts[$prefix])" }
+if ($preview -lt $PreviewCount) { Write-Warning 'Fewer preview products than requested.' }
+if ($seriesCounts.GRM -eq 0 -or $seriesCounts.GCM -eq 0 -or $seriesCounts.KRM -eq 0) { Write-Warning 'Some target series were not found in this scan. This does not prove they are absent from the database.' }

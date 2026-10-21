@@ -1,0 +1,21 @@
+{
+  "source": "https://www.murata.com/en-global/products/capacitor/ceramiccapacitor/overview/lineup",
+  "checkedAt": "2026-10-05",
+  "scope": "Series-level reference; not individual product certification or company acceptance",
+  "series": {
+    "GRM": { "applications": ["general", "infotainment"], "standards": [], "features": [] },
+    "GRT": { "applications": ["general", "infotainment"], "standards": [], "features": [] },
+    "GCM": { "applications": ["infotainment", "powertrain"], "standards": [], "features": [] },
+    "GGM": { "applications": ["infotainment", "powertrain"], "standards": [], "features": ["防水 / 抗离子迁移"] },
+    "GCH": { "applications": [], "standards": [], "features": [] },
+    "KRM": { "applications": ["general"], "standards": [], "features": ["低啸叫", "抗弯曲裂纹", "抗焊接裂纹"] },
+    "DK1": { "applications": ["general", "infotainment"], "standards": ["安全规格系列"], "features": [] },
+    "GJM": { "applications": ["general", "infotainment"], "standards": [], "features": ["High Q"] },
+    "GQM": { "applications": ["general", "infotainment"], "standards": [], "features": ["High Q"] },
+    "GCQ": { "applications": ["infotainment", "powertrain"], "standards": [], "features": ["High Q"] },
+    "GA2": { "applications": ["general", "infotainment"], "standards": ["日本电气用品安全法对应系列"], "features": [] },
+    "GA3": { "applications": ["general", "infotainment"], "standards": ["安全规格系列"], "features": [] },
+    "KCA": { "applications": ["general", "infotainment", "powertrain"], "standards": ["安全规格系列"], "features": ["低啸叫", "抗弯曲裂纹", "抗焊接裂纹"] },
+    "EVA": { "applications": ["general", "infotainment", "powertrain"], "standards": ["安全规格系列"], "features": ["抗弯曲裂纹"] }
+  }
+}

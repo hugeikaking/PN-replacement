@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "packagePolicy": "Original footprint, then adjacent smaller, then adjacent larger in imported standard packages",
+  "heightPolicy": "Substitutes must meet maximum height; known excess height may only appear in a separate reference group",
+  "minimumCapacitancePf": 1000000,
+  "tierBasis": "Adjacent distinct values in unblocked imported records; never skip a tier to find a match",
+  "temperatureSource": "https://article.murata.com/en-global/article/temperature-characteristics-electrostatic-capacitance",
+  "temperaturePolicy": "EIA Class 2 only; higher upper temperature, no narrower lower range, no wider drift; nearest compatible upper temperature in imported records",
+  "temperature": {
+    "X5R": { "minC": -55, "maxC": 85, "minusPercent": 15, "plusPercent": 15 },
+    "X6S": { "minC": -55, "maxC": 105, "minusPercent": 22, "plusPercent": 22 },
+    "X6T": { "minC": -55, "maxC": 105, "minusPercent": 33, "plusPercent": 22 },
+    "X7R": { "minC": -55, "maxC": 125, "minusPercent": 15, "plusPercent": 15 },
+    "X7S": { "minC": -55, "maxC": 125, "minusPercent": 22, "plusPercent": 22 },
+    "X7T": { "minC": -55, "maxC": 125, "minusPercent": 33, "plusPercent": 22 },
+    "X8R": { "minC": -55, "maxC": 150, "minusPercent": 15, "plusPercent": 15 }
+  }
+}

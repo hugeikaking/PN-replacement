@@ -1,0 +1,376 @@
+{
+  "sourceFile": "murata-products-info-openapi-zh (1).json",
+  "sourceSha256": "93BF7D3B3E35E591E92BDE8A1D364BD99C8F522805EA3914EC08943C525CFE32",
+  "sourceTitle": "产品信息API 版本3.0",
+  "sourcePath": "components.schemas.products-v3.properties",
+  "categoryCount": 73,
+  "extractedAtUtc": "2026-10-08T08:52:24.3433561Z",
+  "liveApiVerified": false,
+  "categories": [
+    {
+      "category": "ceramicCapacitorSMD",
+      "description": "陶瓷电容器(SMD)",
+      "schemaRef": "#/components/schemas/products-v3-ceramicCapacitorSMD"
+    },
+    {
+      "category": "ceramicCapacitorLead",
+      "description": "陶瓷电容器(引线型)",
+      "schemaRef": "#/components/schemas/products-v3-ceramicCapacitorLead"
+    },
+    {
+      "category": "polymerAluminumElectrolyticCapacitor",
+      "description": "导电性高分子铝电容器",
+      "schemaRef": "#/components/schemas/products-v3-polymerAluminumElectrolyticCapacitor"
+    },
+    {
+      "category": "singleLayerMicrochipCapacitor",
+      "description": "单层微片电容器",
+      "schemaRef": "#/components/schemas/products-v3-singleLayerMicrochipCapacitor"
+    },
+    {
+      "category": "siliconCapacitor",
+      "description": "硅电容器",
+      "schemaRef": "#/components/schemas/products-v3-siliconCapacitor"
+    },
+    {
+      "category": "variableCapacitor",
+      "description": "可变电容器",
+      "schemaRef": "#/components/schemas/products-v3-variableCapacitor"
+    },
+    {
+      "category": "highTemperatureFilmCapacitor",
+      "description": "高耐热薄膜电容器",
+      "schemaRef": "#/components/schemas/products-v3-highTemperatureFilmCapacitor"
+    },
+    {
+      "category": "inductor",
+      "description": "电感器(线圈)",
+      "schemaRef": "#/components/schemas/products-v3-inductor"
+    },
+    {
+      "category": "ferriteBeadInductortypefilter",
+      "description": "铁氧体磁珠/阻抗型滤波器",
+      "schemaRef": "#/components/schemas/products-v3-ferriteBeadInductortypefilter"
+    },
+    {
+      "category": "lcCombinedfilter",
+      "description": "LC复合滤波器",
+      "schemaRef": "#/components/schemas/products-v3-lcCombinedfilter"
+    },
+    {
+      "category": "commonModeChokeCoilCommonModeNoiseFilter",
+      "description": "共模扼流圈/共模静噪滤波器",
+      "schemaRef": "#/components/schemas/products-v3-commonModeChokeCoilCommonModeNoiseFilter"
+    },
+    {
+      "category": "leaded3TerminalCapacitor",
+      "description": "引线型三端子电容器",
+      "schemaRef": "#/components/schemas/products-v3-leaded3TerminalCapacitor"
+    },
+    {
+      "category": "blockType",
+      "description": "方块型",
+      "schemaRef": "#/components/schemas/products-v3-blockType"
+    },
+    {
+      "category": "tSeries",
+      "description": "T系列",
+      "schemaRef": "#/components/schemas/products-v3-tSeries"
+    },
+    {
+      "category": "bSeries",
+      "description": "B系列",
+      "schemaRef": "#/components/schemas/products-v3-bSeries"
+    },
+    {
+      "category": "highVoltageResistor",
+      "description": "高压电阻",
+      "schemaRef": "#/components/schemas/products-v3-highVoltageResistor"
+    },
+    {
+      "category": "ntcForTemperatureSensor",
+      "description": "温度检测用负温度系数（NTC）热敏电阻",
+      "schemaRef": "#/components/schemas/products-v3-ntcForTemperatureSensor"
+    },
+    {
+      "category": "ntcForInrushCurrentSuppression",
+      "description": "抑制突入电流用负温度系数（NTC）热敏电阻",
+      "schemaRef": "#/components/schemas/products-v3-ntcForInrushCurrentSuppression"
+    },
+    {
+      "category": "ptcForTemperatureSensor",
+      "description": "温度检测用正温度系数（PTC）热敏电阻",
+      "schemaRef": "#/components/schemas/products-v3-ptcForTemperatureSensor"
+    },
+    {
+      "category": "ptcForOvercurrentProtection",
+      "description": "过电流保护用正温度系数（PTC）热敏电阻",
+      "schemaRef": "#/components/schemas/products-v3-ptcForOvercurrentProtection"
+    },
+    {
+      "category": "ptcForInrushCurrentSuppression",
+      "description": "抑制突入电流用正温度系数（PTC）热敏电阻",
+      "schemaRef": "#/components/schemas/products-v3-ptcForInrushCurrentSuppression"
+    },
+    {
+      "category": "ultrasonicSensor",
+      "description": "超声波传感器",
+      "schemaRef": "#/components/schemas/products-v3-ultrasonicSensor"
+    },
+    {
+      "category": "pyroelectricInfraredSensor",
+      "description": "热电型红外传感器",
+      "schemaRef": "#/components/schemas/products-v3-pyroelectricInfraredSensor"
+    },
+    {
+      "category": "fresnelLens",
+      "description": "菲涅耳透镜",
+      "schemaRef": "#/components/schemas/products-v3-fresnelLens"
+    },
+    {
+      "category": "barometricPressureSensor",
+      "description": "气压传感器",
+      "schemaRef": "#/components/schemas/products-v3-barometricPressureSensor"
+    },
+    {
+      "category": "shockSensor",
+      "description": "冲击传感器",
+      "schemaRef": "#/components/schemas/products-v3-shockSensor"
+    },
+    {
+      "category": "acceleroMeter",
+      "description": "加速度传感器",
+      "schemaRef": "#/components/schemas/products-v3-acceleroMeter"
+    },
+    {
+      "category": "inclinoMeter",
+      "description": "倾角传感器",
+      "schemaRef": "#/components/schemas/products-v3-inclinoMeter"
+    },
+    {
+      "category": "gyroSensor",
+      "description": "陀螺仪",
+      "schemaRef": "#/components/schemas/products-v3-gyroSensor"
+    },
+    {
+      "category": "amrSensorMagneticSensor",
+      "description": "AMR传感器(磁性传感器)",
+      "schemaRef": "#/components/schemas/products-v3-amrSensorMagneticSensor"
+    },
+    {
+      "category": "vibrationSensorDevice",
+      "description": "Vibration Sensor Device",
+      "schemaRef": "#/components/schemas/products-v3-vibrationSensorDevice"
+    },
+    {
+      "category": "ceramicResonatorCrystalUnit",
+      "description": "陶瓷谐振器/晶体谐振器",
+      "schemaRef": "#/components/schemas/products-v3-ceramicResonatorCrystalUnit"
+    },
+    {
+      "category": "crystalOscillator",
+      "description": "晶体振荡器",
+      "schemaRef": "#/components/schemas/products-v3-crystalOscillator"
+    },
+    {
+      "category": "piezoelectricSounderBuzzer",
+      "description": "压电扩音器/压电蜂鸣器",
+      "schemaRef": "#/components/schemas/products-v3-piezoelectricSounderBuzzer"
+    },
+    {
+      "category": "piezoelectricDiaphragm",
+      "description": "压电振动板",
+      "schemaRef": "#/components/schemas/products-v3-piezoelectricDiaphragm"
+    },
+    {
+      "category": "nonIsolatedDCDCconverter",
+      "description": "非隔离DC-DC转换器",
+      "schemaRef": "#/components/schemas/products-v3-nonIsolatedDCDCconverter"
+    },
+    {
+      "category": "isolatedDCDCconverter",
+      "description": "隔离DC-DC转换器",
+      "schemaRef": "#/components/schemas/products-v3-isolatedDCDCconverter"
+    },
+    {
+      "category": "isolatedGateDrivePower",
+      "description": "隔离门驱动电源",
+      "schemaRef": "#/components/schemas/products-v3-isolatedGateDrivePower"
+    },
+    {
+      "category": "isolatedBoardMount",
+      "description": "隔离板载(电源）",
+      "schemaRef": "#/components/schemas/products-v3-isolatedBoardMount"
+    },
+    {
+      "category": "1UFrontEnd",
+      "description": "1U前端(电源)",
+      "schemaRef": "#/components/schemas/products-v3-1UFrontEnd"
+    },
+    {
+      "category": "openFrame1U",
+      "description": "开架式1U",
+      "schemaRef": "#/components/schemas/products-v3-openFrame1U"
+    },
+    {
+      "category": "enclosedFrontEnd3Phase",
+      "description": "3相封闭式前端(电源）",
+      "schemaRef": "#/components/schemas/products-v3-enclosedFrontEnd3Phase"
+    },
+    {
+      "category": "acAmmeterDigitalMeter",
+      "description": "AC Ammeter Digital Meter",
+      "schemaRef": "#/components/schemas/products-v3-acAmmeterDigitalMeter"
+    },
+    {
+      "category": "dcAmmeterDigitalMeter",
+      "description": "DC Ammeter Digital Meter",
+      "schemaRef": "#/components/schemas/products-v3-dcAmmeterDigitalMeter"
+    },
+    {
+      "category": "digitalThermoMeter",
+      "description": "Digital Thermometers",
+      "schemaRef": "#/components/schemas/products-v3-digitalThermoMeter"
+    },
+    {
+      "category": "acLineFrequencyMonitor",
+      "description": "AC Line Frequency Monitor",
+      "schemaRef": "#/components/schemas/products-v3-acLineFrequencyMonitor"
+    },
+    {
+      "category": "multiFunctionDigitalMeter",
+      "description": "Multi Function Digital Meter",
+      "schemaRef": "#/components/schemas/products-v3-multiFunctionDigitalMeter"
+    },
+    {
+      "category": "processMonitorDigitalMeter",
+      "description": "Process Monitor Digital Meter",
+      "schemaRef": "#/components/schemas/products-v3-processMonitorDigitalMeter"
+    },
+    {
+      "category": "acVoltmeterDigitalMeter",
+      "description": "AC Voltmeter Digital Meter",
+      "schemaRef": "#/components/schemas/products-v3-acVoltmeterDigitalMeter"
+    },
+    {
+      "category": "dcVoltmeterDigitalMeter",
+      "description": "DC Voltmeter Digital Meter",
+      "schemaRef": "#/components/schemas/products-v3-dcVoltmeterDigitalMeter"
+    },
+    {
+      "category": "pulseTransformer",
+      "description": "脉冲变压器",
+      "schemaRef": "#/components/schemas/products-v3-pulseTransformer"
+    },
+    {
+      "category": "currentSenseTransformer",
+      "description": "电流感应变压器",
+      "schemaRef": "#/components/schemas/products-v3-currentSenseTransformer"
+    },
+    {
+      "category": "applicationSpecificTransformer",
+      "description": "特定应用的变压器",
+      "schemaRef": "#/components/schemas/products-v3-applicationSpecificTransformer"
+    },
+    {
+      "category": "lcBalun",
+      "description": "LC巴伦器",
+      "schemaRef": "#/components/schemas/products-v3-lcBalun"
+    },
+    {
+      "category": "lcBalancedFilter",
+      "description": "巴伦(差分)带通滤波器",
+      "schemaRef": "#/components/schemas/products-v3-lcBalancedFilter"
+    },
+    {
+      "category": "balun",
+      "description": "巴伦器",
+      "schemaRef": "#/components/schemas/products-v3-balun"
+    },
+    {
+      "category": "coupler",
+      "description": "耦合器",
+      "schemaRef": "#/components/schemas/products-v3-coupler"
+    },
+    {
+      "category": "lcCoupler",
+      "description": "LC耦合器",
+      "schemaRef": "#/components/schemas/products-v3-lcCoupler"
+    },
+    {
+      "category": "filter",
+      "description": "滤波器",
+      "schemaRef": "#/components/schemas/products-v3-filter"
+    },
+    {
+      "category": "ceramicTrap",
+      "description": "陷波器",
+      "schemaRef": "#/components/schemas/products-v3-ceramicTrap"
+    },
+    {
+      "category": "ceramicDiscriminator",
+      "description": "鉴频器",
+      "schemaRef": "#/components/schemas/products-v3-ceramicDiscriminator"
+    },
+    {
+      "category": "crystalFilter",
+      "description": "石英晶体滤波器",
+      "schemaRef": "#/components/schemas/products-v3-crystalFilter"
+    },
+    {
+      "category": "bandPassFilterBPF",
+      "description": "带通滤波器(BPF)",
+      "schemaRef": "#/components/schemas/products-v3-bandPassFilterBPF"
+    },
+    {
+      "category": "lowPassFilterLPF",
+      "description": "低通滤波器(LPF)",
+      "schemaRef": "#/components/schemas/products-v3-lowPassFilterLPF"
+    },
+    {
+      "category": "highPassFilterHPF",
+      "description": "高通滤波器(HPF)",
+      "schemaRef": "#/components/schemas/products-v3-highPassFilterHPF"
+    },
+    {
+      "category": "lcDiplexer",
+      "description": "LC收发双工器",
+      "schemaRef": "#/components/schemas/products-v3-lcDiplexer"
+    },
+    {
+      "category": "acousticWaveDeviceForMobile",
+      "description": "面向移动通信的弾性波元件",
+      "schemaRef": "#/components/schemas/products-v3-acousticWaveDeviceForMobile"
+    },
+    {
+      "category": "rxAntennaCoil",
+      "description": "Rx 天线线圈",
+      "schemaRef": "#/components/schemas/products-v3-rxAntennaCoil"
+    },
+    {
+      "category": "wifiBluetoothModule",
+      "description": "Wi-Fi® + Bluetooth® Modules",
+      "schemaRef": "#/components/schemas/products-v3-wifiBluetoothModule"
+    },
+    {
+      "category": "bluetoothModule",
+      "description": "Bluetooth® Modules",
+      "schemaRef": "#/components/schemas/products-v3-bluetoothModule"
+    },
+    {
+      "category": "loRaWANModule",
+      "description": "LoRa(LoRaWAN)Modules",
+      "schemaRef": "#/components/schemas/products-v3-loRaWANModule"
+    },
+    {
+      "category": "ionizer",
+      "description": "负离子发生器",
+      "schemaRef": "#/components/schemas/products-v3-ionizer"
+    },
+    {
+      "category": "activeOxygenModuleOzonizer",
+      "description": "臭氧发生器",
+      "schemaRef": "#/components/schemas/products-v3-activeOxygenModuleOzonizer"
+    }
+  ]
+}

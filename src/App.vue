@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" :class="{ 'app-container--wide': currentPath === '/translate' || currentPath === '/batch' }">
     <!-- Hash-based routing -->
     <HomePage v-if="currentPath === '/' || currentPath === ''" />
     <TranslatePage v-else-if="currentPath === '/translate'" />
@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { navigateTo } from '@/utils/router'
 import HomePage from '@/pages/index/index.vue'
 import TranslatePage from '@/pages/translate-single/translate-single.vue'
 import BatchPage from '@/pages/translate-batch/translate-batch.vue'
@@ -83,6 +84,8 @@ html, body {
   max-width: 480px;
   margin: 0 auto;
 }
+
+.app-container--wide { max-width: 960px; }
 
 input, textarea, button {
   font-family: inherit;

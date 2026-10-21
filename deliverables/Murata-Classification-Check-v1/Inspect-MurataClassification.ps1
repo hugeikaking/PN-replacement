@@ -1,0 +1,159 @@
+﻿[CmdletBinding()]
+param(
+    [string]$InputPath = (Join-Path $env:USERPROFILE 'Desktop\Murata_MLCC.json'),
+    [string]$OutputDirectory = (Join-Path $env:USERPROFILE 'Desktop\Murata_Classification_Check'),
+    [ValidateRange(1,10000000)][int]$MaxProducts = 20000
+)
+$ErrorActionPreference='Stop'
+if (-not ('PnrepClassificationReader' -as [type])) {
+Add-Type -TypeDefinition @"
+using System;
+using System.IO;
+using System.Text;
+public sealed class PnrepClassificationReader : IDisposable {
+    private readonly StreamReader r;
+    private bool first = true;
+    private bool finished = false;
+    public PnrepClassificationReader(string path) {
+        r = new StreamReader(path, new UTF8Encoding(false, true), true, 65536);
+        try {
+            Expect('{');
+            while (true) {
+                if (Peek() == '}') throw new InvalidDataException("Products array not found.");
+                string key = ReadValue(true);
+                Expect(':');
+                if (key == "\"Products\"") { Expect('['); break; }
+                ReadValue(false);
+                Expect(',');
+            }
+        } catch { r.Dispose(); throw; }
+    }
+    private int Peek() {
+        while (r.Peek() >= 0 && Char.IsWhiteSpace((char)r.Peek())) r.Read();
+        return r.Peek();
+    }
+    private void Expect(char c) {
+        if (Peek() != c) throw new InvalidDataException("Expected " + c);
+        r.Read();
+    }
+    // Balanced JSON value scanner, aware of quotes and escaped characters.
+    private string ReadValue(bool capture) {
+        int ch = Peek();
+        if (ch < 0) throw new InvalidDataException("Unexpected EOF.");
+        StringBuilder b = capture ? new StringBuilder() : null;
+        bool quoted = false, escaped = false;
+        int depth = 0;
+        bool composite = ch == '{' || ch == '[';
+        bool stringValue = ch == '"';
+        while (true) {
+            ch = r.Peek();
+            if (ch < 0) throw new InvalidDataException("Truncated JSON value.");
+            if (!composite && !stringValue && (ch == ',' || ch == '}' || Char.IsWhiteSpace((char)ch))) break;
+            r.Read();
+            char c = (char)ch;
+            if (capture) {
+                b.Append(c);
+                if (b.Length > 16777216) throw new InvalidDataException("Single product exceeds 16MB.");
+            }
+            if (quoted) {
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == '"') { quoted = false; if (stringValue) break; }
+            } else {
+                if (c == '"') quoted = true;
+                else if (c == '{' || c == '[') depth++;
+                else if (c == '}' || c == ']') { depth--; if (composite && depth == 0) break; }
+            }
+        }
+        return capture ? b.ToString() : null;
+    }
+    public string Next() {
+        if (finished) return null;
+        if (Peek() == ']') {
+            r.Read();
+            // Consume remaining root properties without retaining them.
+            while (Peek() == ',') { r.Read(); ReadValue(false); Expect(':'); ReadValue(false); }
+            Expect('}');
+            if (Peek() != -1) throw new InvalidDataException("Unexpected data after root.");
+            finished = true; return null;
+        }
+        if (!first) { Expect(','); if (Peek() == ']') throw new InvalidDataException("Trailing comma."); }
+        if (Peek() != '{') throw new InvalidDataException("Products must contain objects.");
+        first = false;
+        return ReadValue(true);
+    }
+    public void Dispose() { r.Dispose(); }
+}
+"@
+}
+$source=Get-Item -LiteralPath $InputPath
+if ($source.PSIsContainer) { throw 'InputPath must be a JSON file.' }
+$sourceBytes=$source.Length; $sourceModified=$source.LastWriteTimeUtc
+$profiles=@{}; $count=0; $end=$false
+$hash=[Security.Cryptography.SHA256]::Create()
+function Html($Value) { return [Net.WebUtility]::HtmlEncode([string]$Value) }
+function Ensure-Profile([string]$Path) {
+    if (-not $profiles.ContainsKey($Path)) {
+        $profiles[$Path]=[pscustomobject]@{field=$Path; present=0; nulls=0; otherObservations=0; values=@{}}
+    }
+}
+function Observe([string]$Path,$Raw) {
+    Ensure-Profile $Path
+    $p=$profiles[$Path]; $p.present++
+    if ($null -eq $Raw) { $p.nulls++; return }
+    $type=$Raw.GetType().FullName
+    $json=ConvertTo-Json -InputObject $Raw -Depth 100 -Compress
+    $key=$type+':'+[BitConverter]::ToString($hash.ComputeHash([Text.Encoding]::UTF8.GetBytes($json)))
+    if ($p.values.ContainsKey($key)) { $p.values[$key].count++; return }
+    if ($p.values.Count -ge 50) { $p.otherObservations++; return }
+    $p.values[$key]=[pscustomobject]@{type=$type; json=$json.Substring(0,[Math]::Min(2000,$json.Length)); truncated=($json.Length -gt 2000); count=1}
+}
+function Inspect-Object($Object,[string]$Prefix,[int]$Depth=0,[bool]$Selected=$false) {
+    if ($null -eq $Object -or $Object -isnot [pscustomobject] -or $Depth -gt 4) { return }
+    foreach ($property in $Object.PSObject.Properties) {
+        $path=if ($Prefix -eq '') {$property.Name} else {$Prefix+'.'+$property.Name}
+        $chosen=$Selected -or $property.Name -match '(?i)application|characteristic|high.?q|standard|safety|certif|approval|compliance'
+        if ($chosen) { Observe $path $property.Value }
+        Inspect-Object $property.Value $path ($Depth+1) $chosen
+    }
+}
+foreach ($path in @('Application','Specs.Characteristics','Specs.TemperatureCharacteristicsCompliedStandard','ComplianceInfo.AecQ200Support')) { Ensure-Profile $path }
+$reader=New-Object PnrepClassificationReader($source.FullName)
+try {
+    while ($count -lt $MaxProducts) {
+        $json=$reader.Next()
+        if ($null -eq $json) { $end=$true; break }
+        $product=ConvertFrom-Json -InputObject $json
+        Inspect-Object $product ''
+        $count++
+        if ($count % 1000 -eq 0) { Write-Host "Inspected $count products (classification fields only)." }
+    }
+} finally { $reader.Dispose(); $hash.Dispose() }
+$after=Get-Item -LiteralPath $source.FullName
+if ($after.Length -ne $sourceBytes -or $after.LastWriteTimeUtc -ne $sourceModified) { throw 'Source changed during inspection; no successful report was generated.' }
+$dir=Join-Path $OutputDirectory ('fields-'+(Get-Date -Format 'yyyyMMdd-HHmmss')+'-'+[guid]::NewGuid().ToString('N').Substring(0,6))
+New-Item -ItemType Directory -Path $dir -Force | Out-Null
+$rows=@($profiles.Keys | Sort-Object | ForEach-Object {
+    $p=$profiles[$_]
+    [pscustomobject]@{field=$p.field; present=$p.present; missing=($count-$p.present); nulls=$p.nulls; otherObservations=$p.otherObservations; values=@($p.values.Values | Sort-Object count -Descending)}
+})
+$report=[pscustomobject]@{toolBuild='classification-inspector-v1'; completed=$true; source=$source.FullName; sourceBytes=$sourceBytes; sourceModifiedUtc=$sourceModified.ToString('o'); inspected=$count; reachedArrayEnd=$end; maxProducts=$MaxProducts; fields=$rows}
+$utf8=New-Object Text.UTF8Encoding($true)
+[IO.File]::WriteAllText((Join-Path $dir 'classification-fields.json'),(ConvertTo-Json -InputObject $report -Depth 100),$utf8)
+$body=New-Object Text.StringBuilder
+foreach ($row in $rows) {
+    [void]$body.Append('<section><h2>'+(Html $row.field)+'</h2><p>有此字段：'+$row.present+'；缺少：'+$row.missing+'；null：'+$row.nulls+'</p>')
+    if ($row.field -eq 'Specs.TemperatureCharacteristicsCompliedStandard') { [void]$body.Append('<p>这是温度特性采用的标准（例如 EIA/JIS），不能当作安全认证。</p>') }
+    [void]$body.Append('<table><thead><tr><th>原值类型</th><th>原始 JSON 值</th><th>出现次数</th></tr></thead><tbody>')
+    foreach ($value in $row.values) {
+        $note=if ($value.truncated) {'（显示已截短）'} else {''}
+        [void]$body.Append('<tr><td>'+(Html $value.type)+'</td><td><pre>'+(Html $value.json)+(Html $note)+'</pre></td><td>'+ $value.count+'</td></tr>')
+    }
+    [void]$body.Append('</tbody></table><p>超过每字段 50 个样例上限、未展示的观测次数：'+$row.otherObservations+'</p></section>')
+}
+$scope=if ($end) {'已读取到 Products 数组末尾'} else {'达到检查上限；未检查到的字段或取值仍可能存在'}
+$html='<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; base-uri ''none''; form-action ''none''"><title>Murata 应用与特征字段检查</title><style>body{font:16px system-ui;margin:24px;color:#191919;background:#f7f8f8}section{padding:16px;background:white;margin:16px 0}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:10px;text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:900px}h2{overflow-wrap:anywhere}</style></head><body><h1>Murata 应用与特征字段检查</h1><p>原文件：'+(Html $source.FullName)+'</p><p>已检查 '+$count+' 条；'+$scope+'。</p><p>只在本机读取原库，原值不映射、不修改，无网络上传。这是字段检查，不是全目录匹配测试或产品认证。数字、布尔值、对象和数组保持原样；false 不当作缺失。可拍 Application、Specs.Characteristics 及安全字段页面核对，无需传出数据库。</p>'+$body.ToString()+'</body></html>'
+$reportPath=Join-Path $dir 'classification-fields.html'
+[IO.File]::WriteAllText($reportPath,$html,$utf8)
+Write-Host "Report saved: $reportPath"
+[pscustomobject]@{ReportPath=$reportPath; Inspected=$count; ReachedArrayEnd=$end}

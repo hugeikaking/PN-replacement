@@ -80,6 +80,7 @@ export async function loadRule(
  * Re-export for convenience
  */
 export { parseDescription } from './parser'
+export type { ParsedParams } from './parser'
 export { matchParams } from './matcher'
 export { buildPartNumber, buildDescription } from './builder'
 export * from './types'

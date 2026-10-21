@@ -3,7 +3,8 @@
  *
  * Pinia store for manufacturer part number decoding rules.
  * Users can upload text rules, PDF references, or images.
- * Data persisted to localStorage so one upload benefits everyone.
+ * Reference data is local to this browser. Attachments are not executable rules
+ * and localStorage does not provide company-wide sharing.
  */
 
 import { defineStore } from 'pinia'

@@ -6,6 +6,7 @@
   "scripts": {
     "dev:h5": "vite",
     "build:h5": "vite build",
+    "build:official-preview": "node scripts/build-official-preview.mjs",
     "dev:mp-weixin": "vite --mode mp-weixin",
     "build:mp-weixin": "vite build --mode mp-weixin",
     "test": "vitest run",

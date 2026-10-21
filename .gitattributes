@@ -1,0 +1,3 @@
+# Preserve the exact bytes of offline HTML, patches and PowerShell tools.
+# Release hashes and incremental upgrade bases must survive clone/checkout.
+* -text

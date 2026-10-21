@@ -1,0 +1,31 @@
+﻿$ErrorActionPreference='Stop'
+$root=Join-Path ([IO.Path]::GetTempPath()) ('pnrep-review-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $root | Out-Null
+$fixture=Join-Path $root 'synthetic.json'
+@{Products=@(
+    @{Partno='GCM_TEST'; Status='synthetic'; Specs=@{CapacitanceText='100,000pF'; RatedVoltageDCText='16V'; SizeCodeInInch='0402'; TemperatureCharacteristics='X7R'}; ComplianceInfo=@{AecQ200Support=$true}; MediaFileUrls=@{SpecificationsSheet='synthetic-only'}}
+    @{Partno='DK1_TEST'; Status='synthetic'; Specs=@{CapacitanceText='10pF'; RatedVoltageAC=250; Length=1; Width=1; TemperatureCharacteristics='SL'}; ComplianceInfo=@{AecQ200Support=$false}; MediaFileUrls=@{SpecificationsSheet='<script>alert(1)</script>'}}
+)} | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $fixture -Encoding UTF8
+& (Join-Path $PSScriptRoot 'Test-MurataDatabase.ps1') -InputPath $fixture -OutputDirectory $root -PreviewCount 2 -MaxScan 3 -SamplesPerSeries 1
+$run=Get-ChildItem -LiteralPath $root -Directory | Where-Object Name -like 'check-*' | Select-Object -First 1
+$review=Join-Path $PSScriptRoot 'Review-MurataDataCheck.ps1'
+$r=& $review -RunDirectory $run.FullName -ExpectedPreviewCount 2
+if ($r.ErrorCount -ne 0 -or $r.TodoCount -eq 0 -or $r.SchemaVerified -or $r.UnitsVerified) { throw 'Review incorrectly reported full validation or errors.' }
+$html=Get-Content -LiteralPath $r.ReportPath -Raw -Encoding UTF8
+if ($html.Contains('<script>') -or -not $html.Contains('&lt;script&gt;')) { throw 'HTML escaping failed.' }
+if (-not $html.Contains('False') -or -not $html.Contains('Specs.RatedVoltageAC')) { throw 'False/AC preservation failed.' }
+if (-not $html.Contains('GCM 容值范围') -or -not $html.Contains('pf, uf')) { throw 'Missing capacitance ranges not flagged.' }
+$summaryPath=Join-Path $run.FullName 'run-summary.json'
+$summary=Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
+$summary.Completed=$false
+$summary.PreviewRows=99
+$summary.SeriesSamples.GCM=9
+$summary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $summaryPath -Encoding UTF8
+$r=& $review -RunDirectory $run.FullName -ExpectedPreviewCount 2
+if ($r.ErrorCount -lt 3) { throw 'Incomplete run and count inconsistencies not flagged.' }
+$empty=Join-Path $root 'empty'
+New-Item -ItemType Directory -Path $empty | Out-Null
+$failed=$false
+try { & $review -RunDirectory $empty } catch { $failed=$true }
+if (-not $failed) { throw 'Missing reports incorrectly accepted.' }
+Write-Host 'PASS: local review, missing series, false/AC, escaped HTML, incomplete extraction, mismatched counts, missing files.'

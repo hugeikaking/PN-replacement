@@ -9,7 +9,7 @@
 
     <!-- Info Banner -->
     <div class="kb-page__banner">
-      💡 上传厂家的料号编码规则后，所有人均可使用"料号→规格描述"功能进行解析。
+      文字、PDF 和图片保存在当前浏览器，暂不共享。附件仅供查阅；解析使用已校准的内置规则，上传不会自动改变编码映射。
     </div>
 
     <!-- Rule List -->
@@ -359,7 +359,7 @@ function saveRule() {
     fileName: form.fileType !== 'text' ? form.fileName : undefined,
   })
 
-  showToast('规则已保存，所有人均可使用')
+  showToast('资料已添加到当前浏览器，尚未共享或启用为解析规则')
   resetForm()
   showEditor.value = false
 }
