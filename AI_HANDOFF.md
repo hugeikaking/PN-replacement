@@ -1,8 +1,20 @@
 # 被动件料号翻译：AI 接手完整交接文档
 
 整理日期：2026-09-06。项目目录：E:\WaPJTS\PNrep。
-最新更新：2026-10-05 第四步。历史章节保留开发记录，当前状态以 docs/MURATA_STEP4.md 和下方第四步段落为准。
+最新更新：2026-10-30 v2.6.7 报价粘贴。历史章节保留开发记录，当前状态以本节和 docs/MURATA_QUOTATION_V2_6_7.md 为准。
 本文综合开发对话与当前代码核对结果；不是完整源码的替代品。接手时请同时读取项目源码。本文只做交接，不表示以下待办已经实施。
+
+## 2026-10-30 当前状态：v2.6.7 报价粘贴
+
+用户截图提供公司申请表44列A:AR，第1～3行元数据、第4行列名，数据从A5开始。用户明确覆盖截图的Register/Update示例：C填Y；G为勾选的村田PN；I为工规WLMD5G、AEC-Q200 IVI-OT、Series=GCM优先ADAS-OT；J=IoT module；K=100000；L随机1～100整数；M为K×L数值（用户允许替换复杂公式）；O=pcs/month；P:T留空，本次不填翻译申请字段，其他列空。不要自行改成Register，不要留空M或推测复杂公式。
+
+src/utils/quotation.ts实现纯44列TSV/HTML、选中PN去重但保留所有查询提示、Y40原记录判定和随机用量缓存。GCM只看明确Series；其他AEC支持特点或compliance=true，特点AEC/compliance=false冲突不能自动归类；非AEC且general才自动WLMD5G，未知弹窗必选。输入控制字符/公式开头/异常料号及非法用量拒绝。复制HTML设置文本格式，失败退回复制事件同时写HTML+文本，再失败可手动全选。重复复制、关闭重开保持用量，编辑L同步M；新查询或清除重置缓存。共享H5与离线toolbar新增“复制报价需要数据”，未选禁用；弹窗四列PN/提示、Y40下拉、L可编辑、M计算数值。已有A/B、已选导出、规格书功能不改。明确勾选替代/超高/待核查可报价但弹窗保留警告；不把警告写入P:T。提醒单击A5或下方空白数据行的A单元格，44列空格会覆盖已有内容和M公式，不修改前四行；并非自动提交或读取内部模板。
+
+公司导入115098条的原两个数据文件无需重整。本次没有读取公司实际JSON、模板或API Key。当前离线deliverables/Murata-Step6-v2_6_7-offline，原v2.6.6保持SHA 376F4DD1CB98B2EDC8D49669B937A0E6F77BFD7F8982E26A1B0DCC8D1F2CD1BC。新HTML558670字节，SHA 6A587D0DA224243F0899498D490B9CE1250EA6CB8DA0E017FF9F154659868719；patch252313字节，SHA 5C95E6EC0B4BA5C5F2B27434CECB27C20F4EB5768D8D8757D6A0491DDE0A24B2；updater5618字节。scripts/build-quotation-deliverables.mjs验证固定base/两script语法/CSP connect-src none/逐字节还原，产出严格SHA校验CreateNew的PS5升级器及对应Tests.ps1。公司只需通过批准渠道传updater+patch，在原v2.6.6旁运行，不覆盖原版；默认构建改到v2.6.7。保留所有历史升级基准字节。
+
+226单测/16文件通过（新增报价21项），vue-tsc/H5构建通过，原Sass弃用及chunk大小提示未修；PS5.1升级19检查通过。scripts/Test-QuotationBrowser.mjs可用本地Playwright包执行，Chrome与Edge全新headless会话均实际写入/读回HTML及TSV剪贴板3行44列，并读回异步剪贴板拒绝后的备用复制4行44列；校验分类/未知必选、整数拒绝、M同步、随机稳定/重查重建、模式选择恢复、清除禁用、窄屏无页面横向溢出及无pageerror。只用4条SYNTHETIC合成记录，截图quotation-preview-synthetic-chrome.png/msedge.png，不是公司产品。未执行真实Excel粘贴/模板保护/内部导入，须用户先在模板副本验收。
+
+此前已按用户要求备份GitHub origin https://github.com/hugeikaking/PN-replacement.git，master提交60722b3。用户于2026-10-30进一步授权将v2.6.7的代码、测试、说明及升级文件同步到同一仓库；具体备份提交及同步状态以git log和origin/master为准。README已更新当前版本，docs/FINAL_STAGE_QUOTATION_EXCEL.md为旧需求记录，被本次映射取代。公司数据/密钥/其他项目CustomerRadar排除规则继续生效。
 
 ## 1. 给接手 AI 的首要说明
 

@@ -9,6 +9,8 @@ import type { ApplicationCategory } from '../engine/official/classification'
 import { readBatchWorkbook, selectBatchRows, batchExportTables, encodeBatchCsv, encodeBatchExcel, batchTemplate } from '../utils/batch-files'
 import { buildDatasheetPlan, selectedDatasheetLinks, nextDatasheetLink, datasheetMatches } from '../utils/datasheet-download'
 import type { BatchWorkbook, BatchInputRow, BatchExportEntry } from '../utils/batch-files'
+import { selectedQuotationItems, buildQuotationClipboard, writeQuotationClipboard, QUOTATION_Y40, QUOTATION_SET_QTY } from '../utils/quotation'
+import type { QuotationY40 } from '../utils/quotation'
 
 export interface TranslatorOptions {
   initialMode?: OfficialTranslationMode
@@ -27,7 +29,7 @@ export interface TranslatorOptions {
 export function mountOfficialTranslator(root: HTMLElement, options: TranslatorOptions = {}) {
 root.classList.add('official-translator')
 root.innerHTML = `
-  <header><div><span class="eyebrow">被动件料号翻译</span><h1>物料与料号互译</h1></div><span class="version">v2.6.6</span></header>
+  <header><div><span class="eyebrow">被动件料号翻译</span><h1>物料与料号互译</h1></div><span class="version">v2.6.7</span></header>
   <section class="panel catalog-bar"><p id="catalog-status" role="status" aria-live="polite">尚未导入规格数据</p><details id="catalog-details" open><summary>数据详情 / 更换数据</summary><p class="note">在第二步生成的同一个结果文件夹里，选择 <strong>normalization-summary.json</strong> 和 <strong>normalized-products.jsonl</strong> 两个文件。文件仅在当前页面读取，不上传；刷新后需重新选择。</p>
     <label class="file-button" for="catalog-files">选择两个文件</label><input id="catalog-files" type="file" accept=".json,.jsonl" multiple>
     <div id="catalog-info" hidden></div>
@@ -83,7 +85,7 @@ const makeView = () => {
   const empty = el('div', '输入物料描述或料号，点击查询后在这里查看结果。', 'empty-results')
   const results = document.createElement('div')
   container.append(heading, bulk, status, empty, results); resultHost.append(container)
-  return { container, status, bulk, results, empty, queryCount, input: '', revision: 0, searching: false, applications: new Set<ApplicationCategory>(), aecCharacteristic: false, importedRows: [] as BatchInputRow[], entries: [] as BatchExportEntry[], book: undefined as BatchWorkbook | undefined, sheet: 0, column: 0, hasHeader: true, fileVersion: 0, fileStatus: '', readingFile: false }
+  return { container, status, bulk, results, empty, queryCount, quotationUsages: new Map<string, number>(), input: '', revision: 0, searching: false, applications: new Set<ApplicationCategory>(), aecCharacteristic: false, importedRows: [] as BatchInputRow[], entries: [] as BatchExportEntry[], book: undefined as BatchWorkbook | undefined, sheet: 0, column: 0, hasHeader: true, fileVersion: 0, fileStatus: '', readingFile: false }
 }
 const views = { A: makeView(), B: makeView() }
 let catalog = options.catalog
@@ -93,6 +95,11 @@ let searchStatus = views[mode].status
 let disposed = false
 let loading = false
 let datasheetDialog: HTMLDialogElement | undefined
+let quotationDialog: HTMLDialogElement | undefined
+function closeQuotationDialog() {
+  if (!quotationDialog) return
+  quotationDialog.close(); quotationDialog.remove(); quotationDialog = undefined
+}
 function closeDatasheetDialog() {
   if (!datasheetDialog) return
   datasheetDialog.close(); datasheetDialog.remove(); datasheetDialog = undefined
@@ -107,6 +114,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, text = '', cls = '') 
 function syncSearch() { search.disabled = loading || views[mode].searching || (mode === 'A' && !catalog) || !description.value.trim() }
 function changeMode(next: OfficialTranslationMode) {
   closeDatasheetDialog()
+  closeQuotationDialog()
   mode = next
   description.value = views[mode].input
   searchStatus = views[mode].status
@@ -152,6 +160,8 @@ root.querySelectorAll<HTMLButtonElement>('[data-example]').forEach(button => but
 
 function resetView(view: typeof views.A) {
   closeDatasheetDialog()
+  closeQuotationDialog()
+  view.quotationUsages.clear()
   view.revision++; view.searching = false; view.entries = []; view.results.replaceChildren(); view.status.textContent = ''; view.empty.hidden = false; view.empty.textContent = '输入物料描述或料号，点击查询后在这里查看结果。'; buildToolbar(view)
 }
 root.querySelector('#clear-input')!.addEventListener('click', () => {
@@ -223,9 +233,10 @@ function buildToolbar(view: typeof views.A) {
   const selectedCount = el('strong', '', 'selected-count'); selectedCount.setAttribute('aria-live', 'polite')
   const actions = el('div', '', 'toolbar-actions')
   const copySelected = copyButton('复制已选', () => displayedPNs(view, true).join('\n'), '个料号', view.status)
+  const quoteSelected = quotationButton(view)
   const specsSelected = datasheetButton('打开已选规格书', view, true)
   const exportSelected = exportButton('导出已选 Excel', view, 'xlsx', true)
-  for (const button of [copySelected, specsSelected, exportSelected]) button.dataset.scope = 'selected'
+  for (const button of [copySelected, quoteSelected, specsSelected, exportSelected]) button.dataset.scope = 'selected'
   const more = el('details', '', 'more-actions'); more.append(el('summary', '更多操作'))
   const otherActions = el('div', '', 'selection-bar')
   const copyNormal = copyButton('复制当前正常生产料号', () => displayedPNs(view, false).join('\n'), '个料号', view.status)
@@ -235,7 +246,7 @@ function buildToolbar(view: typeof views.A) {
   copyDescriptions.dataset.scope = 'descriptions'
   otherActions.append(exportButton('导出当前结果 Excel', view, 'xlsx'), exportButton('导出当前结果 CSV', view, 'csv'), copyNormal, specsNormal, copyDescriptions)
   more.append(otherActions, el('p', '普通导出包含查询状态及当前显示的正常生产候选，不自动选料。待核查料号需明确勾选后使用“导出已选 Excel”。', 'note'))
-  actions.append(copySelected, specsSelected, exportSelected, more)
+  actions.append(copySelected, quoteSelected, specsSelected, exportSelected, more)
   view.bulk.replaceChildren(selectedCount, actions)
   syncToolbar(view)
 }
@@ -253,6 +264,7 @@ function datasheetButton(label: string, view: typeof views.A, selectedOnly: bool
   button.addEventListener('click', () => {
     try {
       closeDatasheetDialog()
+      closeQuotationDialog()
       const rows = collectViewEntries(view)
       const plan = buildDatasheetPlan(rows, selectedOnly ? 'selected' : 'displayed-normal')
       if (!plan.partNumbers.length) { view.status.textContent = selectedOnly ? '请先勾选要打开规格书的村田料号' : '当前没有正常生产候选，请先查询'; return }
@@ -322,6 +334,86 @@ function datasheetButton(label: string, view: typeof views.A, selectedOnly: bool
       dialog.addEventListener('cancel', event => { event.preventDefault(); closeDatasheetDialog() })
       root.append(dialog); sync(); dialog.showModal(); cancel.focus()
     } catch (error) { closeDatasheetDialog(); view.status.textContent = error instanceof Error ? error.message : '准备规格书链接失败，原查询结果已保留' }
+  })
+  return button
+}
+
+function quotationButton(view: typeof views.A) {
+  const button = el('button', '复制报价需要数据', 'secondary'); button.type = 'button'
+  button.addEventListener('click', () => {
+    try {
+      closeDatasheetDialog(); closeQuotationDialog()
+      const items = selectedQuotationItems(collectViewEntries(view), view.quotationUsages)
+      if (!items.length) { view.status.textContent = '请先勾选要申请报价的村田料号'; return }
+      const dialog = el('dialog', '', 'datasheet-dialog quotation-dialog'); quotationDialog = dialog
+      dialog.setAttribute('aria-labelledby', 'quotation-title')
+      const title = el('h2', '复制报价需要数据'); title.id = 'quotation-title'
+      const note = el('p', `共 ${items.length} 个已选料号，相同料号合并一行。C＝Y，J＝IoT module，K＝${QUOTATION_SET_QTY}，O＝pcs/month；P～T 留空。L 为生成的 1–100 随机整数，可修改，M＝K×L 的数值。随机用量不是客户真实需求，请核对。`, 'note')
+      const pasteHint = el('p', '复制后在原申请表单击 A5（或下方一条空白数据行的 A 单元格）再粘贴，不要选整列，也不要在单元格编辑状态下粘贴。内容占 A～AR 共44列，空白列会覆盖目标范围原内容，M 的原公式会被计算数值替换；前四行不在复制内容中。', 'note')
+      const rules = el('p', 'Y40 按你的报价规则预填：GCM → ADAS-OT；其他明确 AEC-Q200 产品 → IVI-OT；明确非 AEC-Q200 且属于民用/工业应用 → WLMD5G。分类未知或冲突时请手动选择，这些代码不代表新增产品认证。', 'note')
+      const feedback = el('p', '', 'note'); feedback.setAttribute('role', 'status'); feedback.setAttribute('aria-live', 'polite')
+      const tableWrap = el('div', '', 'quotation-table-wrap')
+      const table = el('table'), head = el('thead'), headRow = el('tr')
+      for (const label of ['G · 村田料号 / 核对提示', 'I · Y40', 'L · Usage', 'M · Demand Qty']) { const th = el('th', label); th.scope = 'col'; headRow.append(th) }
+      head.append(headRow); const body = el('tbody'); table.append(head, body); tableWrap.append(table)
+      const manual = el('textarea'); manual.readOnly = true; manual.rows = 4; manual.setAttribute('aria-label', '报价粘贴内容（44列）')
+      manual.addEventListener('focus', () => manual.select())
+      const fallback = el('details', '', 'quotation-manual'); fallback.append(el('summary', '手动复制备用'), el('p', '若浏览器拒绝复制，可单击下框全选后按 Ctrl+C。不要删除开头的空白定位字符；粘贴仍从 A5 或下方空白行的 A 单元格开始。', 'note'), manual)
+      const confirm = el('button', '确认复制报价数据', 'primary'); confirm.type = 'button'
+      const sync = () => {
+        try {
+          const payload = buildQuotationClipboard(items)
+          manual.value = payload.text; confirm.disabled = false; feedback.className = 'note'; feedback.textContent = ''
+        } catch (error) {
+          manual.value = ''; confirm.disabled = true; feedback.className = 'error'
+          feedback.textContent = error instanceof Error ? error.message : '请先核对报价数据'
+        }
+      }
+      for (const item of items) {
+        const row = el('tr'); row.dataset.quotePn = item.partNo
+        const part = el('td'); part.append(el('strong', item.partNo), el('small', item.descriptions.join('；'), 'candidate-summary'))
+        if (item.warnings.length) part.append(el('small', item.warnings.join('；'), 'quotation-warning'))
+        const classification = el('td'), select = el('select'); select.setAttribute('aria-label', `Y40 ${item.partNo}`)
+        const unknown = el('option', '请选择 Y40'); unknown.value = ''; select.append(unknown)
+        for (const code of QUOTATION_Y40) { const option = el('option', code); option.value = code; select.append(option) }
+        select.value = item.y40
+        select.addEventListener('change', () => { item.y40 = select.value as QuotationY40 | ''; sync() })
+        classification.append(select)
+        const usageCell = el('td'), usage = el('input'); usage.type = 'number'; usage.min = '1'; usage.max = '100'; usage.step = '1'; usage.value = String(item.usage); usage.setAttribute('aria-label', `Usage ${item.partNo}`)
+        const demand = el('td', String(QUOTATION_SET_QTY * item.usage)); demand.dataset.quoteDemand = item.partNo
+        usage.addEventListener('input', () => {
+          item.usage = usage.value === '' ? NaN : Number(usage.value)
+          const valid = Number.isInteger(item.usage) && item.usage >= 1 && item.usage <= 100
+          demand.textContent = valid ? String(QUOTATION_SET_QTY * item.usage) : '待修正'
+          if (valid) view.quotationUsages.set(item.partNo, item.usage)
+          sync()
+        })
+        usageCell.append(usage); row.append(part, classification, usageCell, demand); body.append(row)
+      }
+      confirm.addEventListener('click', async () => {
+        try {
+          const payload = buildQuotationClipboard(items); confirm.disabled = true
+          const copied = await writeQuotationClipboard(payload)
+          if (quotationDialog !== dialog) return
+          feedback.className = copied ? 'success' : 'error'
+          feedback.textContent = copied ? `已复制 ${items.length} 行 × 44列。请在申请表 A5 或下方空白数据行的 A 单元格粘贴，核对列位置；L 用量与本次预览一致。` : '浏览器未完成复制，请展开“手动复制备用”，单击内容框后按 Ctrl+C。'
+          if (!copied) { fallback.open = true; manual.focus(); manual.select() }
+          view.status.textContent = feedback.textContent
+        } catch (error) { feedback.className = 'error'; feedback.textContent = error instanceof Error ? error.message : '复制失败，原查询和选择已保留' }
+        finally {
+          if (quotationDialog === dialog) {
+            try { buildQuotationClipboard(items); confirm.disabled = false }
+            catch { confirm.disabled = true }
+          }
+        }
+      })
+      const cancel = el('button', '关闭', 'secondary'); cancel.type = 'button'
+      cancel.addEventListener('click', () => { closeQuotationDialog(); button.focus() })
+      dialog.addEventListener('cancel', event => { event.preventDefault(); closeQuotationDialog(); button.focus() })
+      const actions = el('div', '', 'datasheet-dialog-actions'); actions.append(cancel, confirm)
+      dialog.append(title, note, pasteHint, rules, tableWrap, feedback, fallback, actions)
+      root.append(dialog); sync(); dialog.showModal(); cancel.focus()
+    } catch (error) { closeQuotationDialog(); view.status.textContent = error instanceof Error ? error.message : '准备报价数据失败，原查询结果已保留' }
   })
   return button
 }
@@ -540,6 +632,7 @@ search.addEventListener('click', async () => {
   const applications: ApplicationCategory[] = view.applications.size ? [...view.applications] : ['general']
   const aecCharacteristic = view.aecCharacteristic
   const translations: OfficialTranslation[] = []
+  closeQuotationDialog(); view.quotationUsages.clear()
   view.entries = []; results.replaceChildren(); view.empty.hidden = true; view.searching = true; syncToolbar(view); syncSearch()
   try {
     for (const [index, line] of lines.entries()) {
